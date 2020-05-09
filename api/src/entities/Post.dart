@@ -28,7 +28,7 @@ class Post implements Comparable<Post> {
     String category;
     String imgUrl;
     String imgMime;
-    String lang; // ru
+    String lang;
     String origId;
     String origLink;
 

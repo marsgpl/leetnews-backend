@@ -8,4 +8,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 ADD ./image .
 RUN pub get
 
-CMD dart src/api.dart
+RUN dart2native --output=api src/api.dart
+RUN rm -rf src
+
+CMD ./api
