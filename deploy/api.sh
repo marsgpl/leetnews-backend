@@ -33,7 +33,6 @@ echo "docker pull ..."
 echo "OK"
 
 echo "docker recreate ..."
-    ssh leetnews@marsgpl "mkdir -p web-data"
     ssh leetnews@marsgpl "docker-compose up -d --force-recreate api" || exit 1
 echo "OK"
 

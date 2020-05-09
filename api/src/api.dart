@@ -18,9 +18,6 @@ Future<void> main() async {
         final method = request.method;
         final uri = request.uri;
 
-        print('requestedUri: ${request.requestedUri}');
-        print('uri: ${request.uri}');
-
         Map<String, dynamic> answer = {};
 
         try {

@@ -4,14 +4,12 @@ News app
 
 <https://leetnews.net>
 
-## Start
+## Prepare for deploy
 
-    docker-compose up --build --force-recreate api
-    docker-compose up api
+    ./upload.sh
 
 ## Deploy
 
-    ./upload.sh
     ./deploy.sh
 
 ## Links
@@ -20,6 +18,11 @@ News app
     <https://pub.dev/packages/http_server>
     <https://pub.dev/packages/mongo_dart>
 
-## Debug
+## Local start
+
+    docker-compose up --build --force-recreate api
+    docker-compose up api
+
+## Local debug
 
     docker exec -it leetnews_api_1 bash
