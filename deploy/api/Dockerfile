@@ -1,25 +1,13 @@
-FROM node:13.12.0
+FROM google/dart
 
-WORKDIR /assistant
+WORKDIR /leetnews/api
 
 ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-COPY image/package.json .
-COPY image/package-lock.json .
+RUN pub global activate dartman
 
-ENV NODE_ENV=production
+ADD ./image .
+RUN pub get
 
-RUN npm ci --dev
-
-COPY image/src src
-COPY image/tsconfig.json .
-
-RUN npm run build
-RUN npm run uglify
-RUN cp dst/assistant.json dst.uglified/assistant.json
-RUN rm -rf src dst .cache tsconfig.json node_modules
-RUN mv dst.uglified dst
-RUN npm ci --only=production
-
-CMD npm start
+CMD dartman src/api.dart
