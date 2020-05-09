@@ -10,4 +10,4 @@ RUN pub global activate dartman
 ADD ./image .
 RUN pub get
 
-CMD dartman src/api.dart
+CMD dart src/api.dart

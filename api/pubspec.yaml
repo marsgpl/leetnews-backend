@@ -3,4 +3,7 @@ description: provides json data for app
 homepage: https://leetnews.net
 
 environment:
-    sdk: '>=2.1.0 <3.0.0'
+    sdk: '>=2.5.0 <3.0.0'
+
+dependencies:
+    uuid: ^2.0.4

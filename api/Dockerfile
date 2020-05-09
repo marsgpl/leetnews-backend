@@ -9,9 +9,7 @@ RUN pub global activate dartman
 
 ADD pubspec.yaml .
 ADD pubspec.lock .
+ADD src .
 RUN pub get
-
-ADD . .
-RUN pub get --offline
 
 CMD dartman src/api.dart

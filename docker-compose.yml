@@ -5,6 +5,6 @@ services:
         build: ./api
         restart: "no"
         volumes:
-            - ./api/:/leetnews/api/:ro
+            - ./api/src/:/leetnews/api/src/:ro
         ports:
             - 127.0.0.1:41080:80
