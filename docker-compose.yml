@@ -1,0 +1,10 @@
+version: '3.3'
+
+services:
+    api:
+        build: ./api
+        restart: "no"
+        volumes:
+            - ./api/:/leetnews/api/:ro
+        ports:
+            - 127.0.0.1:41080:80

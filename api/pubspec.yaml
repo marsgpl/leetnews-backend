@@ -1,0 +1,6 @@
+name: leetnews_api
+description: provides json data for app
+homepage: https://leetnews.net
+
+environment:
+    sdk: '>=2.1.0 <3.0.0'
