@@ -1,6 +1,17 @@
 version: '3.3'
 
 services:
+    mongo:
+        image: mongo:4.2.6-bionic
+        restart: always
+        volumes:
+            - ./mongo-data/:/data/db/:rw
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=root
+            - MONGO_INITDB_ROOT_PASSWORD=nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2
+    crawler:
+        image: docker.marsgpl.com/leetnews/crawler:latest
+        restart: always
     api:
         image: docker.marsgpl.com/leetnews/api:latest
         restart: always
