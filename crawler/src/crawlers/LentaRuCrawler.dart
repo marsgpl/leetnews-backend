@@ -87,6 +87,7 @@ class LentaRuCrawler {
                         lang: lang,
                         origId: origId,
                         origLink: link.isEmpty ? '' : link.single.text,
+                        origName: 'lenta.ru',
                     ));
                 });
             });

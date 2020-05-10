@@ -14,6 +14,7 @@ class Post implements Comparable<Post> {
         this.lang = '',
         this.origId = '',
         this.origLink = '',
+        this.origName = '',
     }) :
         id = id ?? Uuid().v4(),
         createdAt = createdAt ?? DateTime.now(),
@@ -31,6 +32,7 @@ class Post implements Comparable<Post> {
     String lang;
     String origId;
     String origLink;
+    String origName;
 
     @override
     String toString() => '*Post(id: $id)';
@@ -60,7 +62,8 @@ class Post implements Comparable<Post> {
         imgMime = mongoData['imgMime'] ?? '',
         lang = mongoData['lang'] ?? '',
         origId = mongoData['origId'] ?? '',
-        origLink = mongoData['origLink'] ?? '';
+        origLink = mongoData['origLink'] ?? '',
+        origName = mongoData['origName'] ?? '';
 
     Map<String, dynamic> toJson() => {
         'id': id,
@@ -72,7 +75,7 @@ class Post implements Comparable<Post> {
         'imgUrl': imgUrl,
         'imgMime': imgMime,
         'lang': lang,
-        'origId': origId,
         'origLink': origLink,
+        'origName': origName,
     };
 }
