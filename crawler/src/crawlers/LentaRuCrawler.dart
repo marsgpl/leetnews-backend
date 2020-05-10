@@ -6,6 +6,7 @@ import 'package:xml/xml.dart' as xml;
 import '../entities/Post.dart';
 
 const RSS_FEED = 'http://lenta.ru/rss/news';
+const ORIG_NAME = 'lenta.ru';
 
 class LentaRuCrawler {
     LentaRuCrawler(this.mongo);
@@ -90,7 +91,7 @@ class LentaRuCrawler {
                         lang: lang,
                         origId: origId,
                         origLink: link.isEmpty ? '' : link.single.text,
-                        origName: 'lenta.ru',
+                        origName: ORIG_NAME,
                     ));
                 });
             });
@@ -121,6 +122,7 @@ class LentaRuCrawler {
 
     // Sat, 09 May 2020 19:51:00 +0300 -> 2002-02-27T14:00:00-0500
     DateTime parsePubDate(String lentaDateFmt) {
+        if (lentaDateFmt.length == 0) return DateTime.now();
         final parts = lentaDateFmt.split(' ');
         return DateTime.parse('${parts[3]}-${monthNameToNumber(parts[2])}-${parts[1]}T${parts[4]}${parts[5]}');
     }
