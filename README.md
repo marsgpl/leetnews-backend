@@ -1,6 +1,6 @@
 # Leetnews
 
-[API Documentation](https://github.com/marsgpl/leetnews-backend/wiki/API-Documentation)
+[API docs](https://github.com/marsgpl/leetnews-backend/wiki/API-docs)
 
 ## Prepare for deploy
 
