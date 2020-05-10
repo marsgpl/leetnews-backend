@@ -70,7 +70,6 @@ class Post implements Comparable<Post> {
         'pubDate': pubDate.toString(),
         'title': title,
         'text': text,
-        'author': author,
         'category': category,
         'imgUrl': imgUrl,
         'imgMime': imgMime,
