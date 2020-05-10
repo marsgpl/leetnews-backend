@@ -1,10 +1,11 @@
 import 'dart:io';
+import 'package:mongo_dart/mongo_dart.dart';
 
 import '../errors.dart';
 
 Future<Map<String, dynamic>> routeNotFound(
     HttpRequest request,
-    HttpResponse response,
+    Db mongo,
 ) async {
     final type = 'ROUTE_NOT_FOUND';
     final code = ERROR_CODES[type] ?? 0;

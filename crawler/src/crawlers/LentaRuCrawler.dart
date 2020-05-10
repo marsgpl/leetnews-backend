@@ -18,11 +18,11 @@ class LentaRuCrawler {
                 throw Exception('newPosts.length == 0');
             }
 
-            final posts = mongo.collection('posts');
+            final postsColl = mongo.collection('posts');
 
             List<String> origIds = newPosts.map((post) => post.origId).toList();
 
-            final existingPosts = await posts
+            final existingPosts = postsColl
                 .find(where.oneFrom('origId', origIds).fields(['origId']));
 
             final Map<String, bool> existingOrigIds = {};
@@ -42,7 +42,7 @@ class LentaRuCrawler {
             });
 
             if (postsToInsert.length > 0) {
-                await posts.insertAll(postsToInsert);
+                await postsColl.insertAll(postsToInsert);
             }
         } catch (error) {
             print('LentaRuCrawler failed: $error');

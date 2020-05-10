@@ -48,23 +48,22 @@ class Post implements Comparable<Post> {
         return createdAt.compareTo(other.createdAt);
     }
 
-    Post.fromJson(Map<String, dynamic> jsonData) :
-        id = jsonData['id'] ?? Uuid().v4(),
-        createdAt = DateTime.parse(jsonData['createdAt'] ?? DateTime.now().toString()),
-        pubDate = DateTime.parse(jsonData['pubDate'] ?? DateTime.now().toString()),
-        title = jsonData['title'] ?? '',
-        text = jsonData['text'] ?? '',
-        author = jsonData['author'] ?? '',
-        category = jsonData['category'] ?? '',
-        imgUrl = jsonData['imgUrl'] ?? '',
-        imgMime = jsonData['imgMime'] ?? '',
-        lang = jsonData['lang'] ?? '',
-        origId = jsonData['origId'] ?? '',
-        origLink = jsonData['origLink'] ?? '';
+    Post.fromMongo(Map<String, dynamic> mongoData) :
+        id = mongoData['_id'].toHexString() ?? Uuid().v4(),
+        createdAt = mongoData['createdAt'] ?? DateTime.now().toString(),
+        pubDate = mongoData['pubDate'] ?? DateTime.now().toString(),
+        title = mongoData['title'] ?? '',
+        text = mongoData['text'] ?? '',
+        author = mongoData['author'] ?? '',
+        category = mongoData['category'] ?? '',
+        imgUrl = mongoData['imgUrl'] ?? '',
+        imgMime = mongoData['imgMime'] ?? '',
+        lang = mongoData['lang'] ?? '',
+        origId = mongoData['origId'] ?? '',
+        origLink = mongoData['origLink'] ?? '';
 
     Map<String, dynamic> toJson() => {
         'id': id,
-        'createdAt': createdAt.toString(),
         'pubDate': pubDate.toString(),
         'title': title,
         'text': text,

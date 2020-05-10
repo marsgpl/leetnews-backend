@@ -1,10 +1,11 @@
 import 'dart:io';
+import 'package:mongo_dart/mongo_dart.dart';
 
 import '../errors.dart';
 
 Future<Map<String, dynamic>> internalError(
     HttpRequest request,
-    HttpResponse response,
+    Db mongo,
     dynamic error,
 ) async {
     final type = 'INTERNAL_ERROR';

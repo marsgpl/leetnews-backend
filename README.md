@@ -38,7 +38,8 @@ News app
         use news;
         show collections;
         db.posts.count({});
-        db.posts.find({}).limit(1);
+        db.posts.find({}).limit(1).pretty();
+        db.posts.remove({});
         db.posts.drop();
 
 ## Indexes
