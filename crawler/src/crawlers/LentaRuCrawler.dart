@@ -78,7 +78,7 @@ class LentaRuCrawler {
                     final author = item.findElements('author');
                     final title = item.findElements('title');
                     final link = item.findElements('link');
-print('pubDate: ${parsePubDate(pubDate.isEmpty ? '' : pubDate.single.text)}');
+
                     posts.add(Post(
                         pubDate: parsePubDate(pubDate.isEmpty ? '' : pubDate.single.text),
                         title: title.isEmpty ? '' : title.single.text,
