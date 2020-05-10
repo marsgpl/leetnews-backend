@@ -8,6 +8,9 @@
 
 ## Deploy
 
+    ./deploy.sh all
+    ./deploy.sh mongo
+    ./deploy.sh crawler
     ./deploy.sh
 
 ## Links
@@ -19,16 +22,18 @@
 ## Local start
 
     docker-compose up -d mongo
-    docker-compose up --build --force-recreate api
-    docker-compose up api
-    docker-compose up --build --force-recreate crawler
     docker-compose up crawler
+    docker-compose up api
+
+    docker-compose up --build --force-recreate mongo
+    docker-compose up --build --force-recreate crawler
+    docker-compose up --build --force-recreate api
 
 ## Local debug
 
-    docker-compose logs -f api
-    docker-compose logs -f crawler
     docker-compose logs -f mongo
+    docker-compose logs -f crawler
+    docker-compose logs -f api
 
     docker exec -it leetnews_api_1 bash
     docker exec -it leetnews_mongo_1 mongo -u root -pnl7QkdoQiqIEnSse8IMgBUfEp7gOThr2
