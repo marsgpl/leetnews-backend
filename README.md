@@ -39,10 +39,13 @@
         show databases;
         use news;
         show collections;
+
         db.posts.count({});
         db.posts.find({}).limit(1).pretty();
         db.posts.remove({});
         db.posts.drop();
+
+        db.categories.count({});
 
 ## Indexes
 

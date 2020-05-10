@@ -8,6 +8,7 @@ import './errorHandlers/internalError.dart';
 
 import './methods/manifest.dart';
 import './methods/getPosts.dart';
+import './methods/getCategories.dart';
 
 const MONGO_PATH = 'mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/admin';
 const MONGO_DB = 'news';
@@ -38,6 +39,10 @@ Future<void> main() async {
             } else if (uri.path == '/api/getPosts') {
                 answer = (method == 'GET') ?
                     await getPosts(request, mongo) :
+                    await methodNotAllowedForRoute(request, mongo);
+            } else if (uri.path == '/api/getCategories') {
+                answer = (method == 'GET') ?
+                    await getCategories(request, mongo) :
                     await methodNotAllowedForRoute(request, mongo);
             } else {
                 answer = await routeNotFound(request, mongo);
