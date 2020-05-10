@@ -97,7 +97,9 @@ class LentaRuCrawler {
 
     String parseImgUrl(dynamic attributes) {
         for (final attribute in attributes) {
-            if (attribute.name == 'url') return attribute.value;
+            if (attribute.name.toString() == 'url') {
+                return attribute.value.toString();
+            }
         }
 
         return '';
@@ -105,7 +107,9 @@ class LentaRuCrawler {
 
     String parseImgMime(dynamic attributes) {
         for (final attribute in attributes) {
-            if (attribute.name == 'type') return attribute.value;
+            if (attribute.name.toString() == 'type') {
+                return attribute.value.toString();
+            }
         }
 
         return '';

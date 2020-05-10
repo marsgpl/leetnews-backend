@@ -7,7 +7,7 @@ import '../entities/Post.dart';
 // categories=Спорт,Интернет+и+СМИ
 // limit=20
 // langs=ru,en
-// beforePubDate=2020-05-07%2021:02:00.002Z
+// lastId=2020-05-07%2021:02:00.002Z
 Future<Map<String, dynamic>> getPosts(
     HttpRequest request,
     Db mongo,
@@ -15,15 +15,15 @@ Future<Map<String, dynamic>> getPosts(
     final params = request.uri.queryParameters;
 
     final categories = (params['categories'] ?? '');
-    final beforePubDate = (params['beforePubDate'] ?? '');
+    final lastId = (params['lastId'] ?? '');
     final limit = max(1, min(40, int.parse(params['limit'] ?? '20')));
     final langs = (params['langs'] ?? 'ru');
 
     final postsColl = mongo.collection('posts');
     final selector = where;
 
-    if (beforePubDate.length > 0) {
-        selector.lt('pubDate', DateTime.parse(beforePubDate));
+    if (lastId.length > 0) {
+        selector.lt('pubDate', DateTime.parse(lastId));
     }
 
     if (langs.contains(',')) {
@@ -49,7 +49,11 @@ Future<Map<String, dynamic>> getPosts(
         .map((row) => Post.fromMongo(row))
         .toList();
 
+    String nextLastId = posts.length == 0 ? '' :
+        posts[posts.length - 1].pubDate.toString();
+
     return {
         'posts': posts,
+        'lastId': nextLastId,
     };
 }
