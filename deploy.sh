@@ -2,14 +2,10 @@
 
 CMD="$1" # default: api
 
-if [[ "$CMD" == "all" ]]; then
-    ./deploy/mongo.sh || exit 1
-    ./deploy/crawler.sh || exit 1
-    ./deploy/api.sh || exit 1
-elif [[ "$CMD" == "mongo" ]]; then
+if [[ "$CMD" == "mongo" ]]; then
     ./deploy/mongo.sh || exit 1
 elif [[ "$CMD" == "crawler" ]]; then
     ./deploy/crawler.sh || exit 1
-else
+elif [[ "$CMD" == "api" ]]; then
     ./deploy/api.sh || exit 1
 fi

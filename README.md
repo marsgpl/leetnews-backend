@@ -8,10 +8,9 @@
 
 ## Deploy
 
-    ./deploy.sh all
     ./deploy.sh mongo
     ./deploy.sh crawler
-    ./deploy.sh
+    ./deploy.sh api
 
 ## Links
 
