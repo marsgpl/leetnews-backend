@@ -5,6 +5,8 @@ import 'package:xml/xml.dart' as xml;
 
 import '../entities/Post.dart';
 
+const RSS_FEED = 'http://lenta.ru/rss/news';
+
 class LentaRuCrawler {
     LentaRuCrawler(this.mongo);
 
@@ -50,7 +52,8 @@ class LentaRuCrawler {
     }
 
     Future<List<Post>> getPosts() async {
-        final request = await HttpClient().get('lenta.ru', 80, '/rss/articles');
+        HttpClient client = HttpClient();
+        final request = await client.getUrl(Uri.parse('$RSS_FEED?v=${DateTime.now()}'));
         final response = await request.close();
 
         final List<String> responseChunks = [];
@@ -75,7 +78,7 @@ class LentaRuCrawler {
                     final author = item.findElements('author');
                     final title = item.findElements('title');
                     final link = item.findElements('link');
-
+print('pubDate: ${parsePubDate(pubDate.isEmpty ? '' : pubDate.single.text)}');
                     posts.add(Post(
                         pubDate: parsePubDate(pubDate.isEmpty ? '' : pubDate.single.text),
                         title: title.isEmpty ? '' : title.single.text,
