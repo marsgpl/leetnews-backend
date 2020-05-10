@@ -1,6 +1,7 @@
 import 'package:mongo_dart/mongo_dart.dart';
 
-import './crawlers/LentaRuCrawler.dart';
+import './crawlers/LentaRuRssCrawler.dart';
+import './crawlers/RussianRtComRssCrawler.dart';
 import './entities/Post.dart';
 
 const MONGO_PATH = 'mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/admin';
@@ -15,7 +16,8 @@ Future<void> main() async {
     print('Mongo ready');
 
     final crawlers = [
-        LentaRuCrawler(mongo),
+        LentaRuRssCrawler(mongo),
+        RussianRtComRssCrawler(mongo),
     ];
 
     while (true) {

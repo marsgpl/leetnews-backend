@@ -9,3 +9,4 @@ dependencies:
     uuid: ^2.0.4
     mongo_dart: ^0.4.0
     xml: ^4.1.0
+    html: ^0.14.0+3

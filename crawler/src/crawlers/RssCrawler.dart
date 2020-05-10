@@ -2,23 +2,25 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:xml/xml.dart' as xml;
+import 'package:html/parser.dart' as html;
 
 import '../entities/Post.dart';
 
-const RSS_FEED = 'http://lenta.ru/rss/news';
-const ORIG_NAME = 'lenta.ru';
+class RssCrawler {
+    RssCrawler(this.mongo);
 
-class LentaRuCrawler {
-    LentaRuCrawler(this.mongo);
+    Db mongo;
+    String rssFeed;
+    String origName;
 
-    final Db mongo;
+    RegExp htmlAnchor = RegExp(r'<a .*?</a>');
 
     Future<void> crawl() async {
         try {
             final newPosts = await getPosts();
 
             if (newPosts.length == 0) {
-                throw Exception('newPosts.length == 0');
+                throw Exception('$origName: newPosts.length == 0');
             }
 
             final postsColl = mongo.collection('posts');
@@ -48,56 +50,24 @@ class LentaRuCrawler {
                 await postsColl.insertAll(postsToInsert);
             }
         } catch (error) {
-            print('LentaRuCrawler failed: $error');
+            print('$origName: crawl failed: $error');
         }
     }
 
     Future<List<Post>> getPosts() async {
         HttpClient client = HttpClient();
-        final request = await client.getUrl(Uri.parse('$RSS_FEED?v=${DateTime.now()}'));
+        final request = await client.getUrl(Uri.parse('$rssFeed?v=${DateTime.now()}'));
         final response = await request.close();
 
         final List<String> responseChunks = [];
         await utf8.decoder.bind(response).forEach(responseChunks.add);
         final feed = xml.parse(responseChunks.join(''));
 
-        final List<Post> posts = [];
+        return convertFeedToPosts(feed);
+    }
 
-        feed.findElements('rss').forEach((rss) {
-            rss.findElements('channel').forEach((channel) {
-                final lang = channel.findElements('language').single.text;
-
-                channel.findElements('item').forEach((item) {
-                    final guid = item.findElements('guid');
-                    final origId = guid.isEmpty ? '' : guid.single.text;
-                    if (origId.length == 0) return;
-
-                    final description = item.findElements('description');
-                    final enclosure = item.findElements('enclosure');
-                    final category = item.findElements('category');
-                    final pubDate = item.findElements('pubDate');
-                    final author = item.findElements('author');
-                    final title = item.findElements('title');
-                    final link = item.findElements('link');
-
-                    posts.add(Post(
-                        pubDate: parsePubDate(pubDate.isEmpty ? '' : pubDate.single.text),
-                        title: title.isEmpty ? '' : title.single.text,
-                        text: parseDescription(description.isEmpty ? '' : description.single.text),
-                        author: author.isEmpty ? '' : author.single.text,
-                        category: category.isEmpty ? '' : category.single.text,
-                        imgUrl: enclosure.isEmpty ? '' : parseImgUrl(enclosure.single.attributes),
-                        imgMime: enclosure.isEmpty ? '' : parseImgMime(enclosure.single.attributes),
-                        lang: lang,
-                        origId: origId,
-                        origLink: link.isEmpty ? '' : link.single.text,
-                        origName: ORIG_NAME,
-                    ));
-                });
-            });
-        });
-
-        return posts;
+    List<Post> convertFeedToPosts(xml.XmlDocument feed) {
+        return [];
     }
 
     String parseImgUrl(dynamic attributes) {
@@ -121,10 +91,11 @@ class LentaRuCrawler {
     }
 
     // Sat, 09 May 2020 19:51:00 +0300 -> 2002-02-27T14:00:00-0500
-    DateTime parsePubDate(String lentaDateFmt) {
-        if (lentaDateFmt.length == 0) return DateTime.now();
-        final parts = lentaDateFmt.split(' ');
-        return DateTime.parse('${parts[3]}-${monthNameToNumber(parts[2])}-${parts[1]}T${parts[4]}${parts[5]}');
+    DateTime parsePubDate(String rssDateFmt) {
+        if (rssDateFmt.length == 0) return DateTime.now();
+        final parts = rssDateFmt.trim().split(' ');
+        return DateTime.parse(
+            '${parts[3]}-${monthNameToNumber(parts[2])}-${parts[1]}T${parts[4]}${parts[5]}');
     }
 
     // May -> 05
@@ -146,10 +117,29 @@ class LentaRuCrawler {
         }
     }
 
-    String parseDescription(String raw) {
-        return raw
-            .replaceAll('<![CDATA[', '')
-            .replaceAll(']]>', '')
-            .trim();
-    }
+    String removeHtmlTags(String text) =>
+        html.parse(text.replaceAll(htmlAnchor, ''))
+            .documentElement.text;
+
+    String removeCdata(String text) => text
+        .replaceAll('<![CDATA[', '')
+        .replaceAll(']]>', '');
+
+    String parseDescription(String text) =>
+        removeHtmlTags(removeCdata(text)).trim();
+
+    String parseTitle(String text) =>
+        removeCdata(text).trim();
+
+    String parseGuid(String text) =>
+        removeCdata(text).trim();
+
+    String parseLink(String text) =>
+        removeCdata(text).trim();
+
+    String parseAuthor(String text) =>
+        removeCdata(text).trim();
+
+    String parseCategory(String text) =>
+        removeCdata(text).trim();
 }
