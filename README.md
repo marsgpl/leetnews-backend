@@ -1,8 +1,6 @@
 # Leetnews
 
-News app
-
-<https://leetnews.net>
+[API Documentation](https://github.com/marsgpl/leetnews-backend/wiki/API-Documentation)
 
 ## Prepare for deploy
 
