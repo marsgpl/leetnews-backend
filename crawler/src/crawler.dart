@@ -18,22 +18,22 @@ Future<void> main() async {
 
     print('Mongo ready');
 
-    await dedupPosts(mongo);
+    // await dedupPosts(mongo);
 
-    // final crawlers = [
-    //     RbcRuRssCrawler(mongo),
-    //     LentaRuRssCrawler(mongo),
-    //     RussianRtComRssCrawler(mongo),
-    //     NewsYandexRuRssCrawler(mongo),
-    //     NewsRamblerRuRssCrawler(mongo),
-    // ];
+    final crawlers = [
+        RbcRuRssCrawler(mongo),
+        LentaRuRssCrawler(mongo),
+        RussianRtComRssCrawler(mongo),
+        NewsYandexRuRssCrawler(mongo),
+        NewsRamblerRuRssCrawler(mongo),
+    ];
 
-    // while (true) {
-    //     final latestPost = await getLatestPost(mongo);
-    //     await Future.wait(crawlers.map((crawler) => crawler.crawl(latestPost)));
-    //     await fixSamePubDates(mongo, latestPost);
-    //     await Future.delayed(const Duration(seconds: DELAY_BETWEEN_ITERATIONS_SECONDS));
-    // }
+    while (true) {
+        final latestPost = await getLatestPost(mongo);
+        await Future.wait(crawlers.map((crawler) => crawler.crawl(latestPost)));
+        await fixSamePubDates(mongo, latestPost);
+        await Future.delayed(const Duration(seconds: DELAY_BETWEEN_ITERATIONS_SECONDS));
+    }
 }
 
 // TODO: select only pubDate's duplicates

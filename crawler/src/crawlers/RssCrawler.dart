@@ -19,7 +19,7 @@ abstract class RssCrawler {
         try {
             Map<String, bool> postIdCache = {};
             final newPosts = (await getPosts()).where((post) {
-                // if (postIdCache[post.origId] != null) return false;
+                if (postIdCache[post.origId] != null) return false;
                 postIdCache[post.origId] = true;
                 return true;
             }).toList();
