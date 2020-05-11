@@ -17,7 +17,12 @@ abstract class RssCrawler {
 
     Future<void> crawl(Post latestPost) async {
         try {
-            final newPosts = await getPosts();
+            Map<String, bool> postIdCache = {};
+            final newPosts = (await getPosts()).where((post) {
+                if (postIdCache[post.origId] != null) return false;
+                postIdCache[post.origId] = true;
+                return true;
+            }).toList();
 
             if (newPosts.length == 0) {
                 throw Exception('$origName: newPosts.length == 0');
@@ -44,7 +49,9 @@ abstract class RssCrawler {
                     return;
                 }
 
-                if (post.pubDate.compareTo(latestPost.pubDate) < 0) {
+                if (latestPost == null) {
+                    latestPost = Post(pubDate: post.pubDate);
+                } else if (post.pubDate.compareTo(latestPost.pubDate) < 0) {
                     latestPost.pubDate = post.pubDate;
                 }
 

@@ -45,6 +45,13 @@
         db.posts.remove({});
         db.posts.drop();
 
+        db.posts.aggregate(
+            {"$match": {"origId": {"$ne": null}}},
+            {"$group": {"_id": "$origId", "count": {"$sum": 1}}},
+            {"$match": {"count": {"$gt": 1}}},
+            {"$sort": {"count": -1}},
+            {"$project": {"origId": "$_id", "_id": 0}})
+
         db.categories.count({});
 
 ## Indexes
@@ -52,3 +59,4 @@
     use news;
     db.posts.ensureIndex({ "pubDate": 1 });
     db.posts.ensureIndex({ "category": 1 });
+    db.posts.ensureIndex({ "origId": 1 }, { "unique": true });
