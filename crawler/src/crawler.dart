@@ -1,6 +1,7 @@
 import 'package:mongo_dart/mongo_dart.dart';
 
 import './crawlers/LentaRuRssCrawler.dart';
+import './crawlers/RbcRuRssCrawler.dart';
 import './crawlers/RussianRtComRssCrawler.dart';
 import './entities/Post.dart';
 
@@ -17,6 +18,7 @@ Future<void> main() async {
 
     final crawlers = [
         LentaRuRssCrawler(mongo),
+        RbcRuRssCrawler(mongo),
         RussianRtComRssCrawler(mongo),
     ];
 
