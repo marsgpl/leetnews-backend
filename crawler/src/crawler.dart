@@ -39,7 +39,6 @@ Future<void> fixSamePubDates(Db mongo, Post latestPost) async {
     final selector = where;
 
     if (latestPost != null) {
-        latestPost.pubDate = DateTime(2010);
         selector.gte('pubDate', latestPost.pubDate);
     }
 
