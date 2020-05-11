@@ -17,6 +17,7 @@ class NewsRamblerRuRssCrawler extends RssCrawler {
         'http://news.rambler.ru/rss/starlife/',
         'http://news.rambler.ru/rss/army/',
     ];
+
     String origName = 'news.rambler.ru';
 
     Future<List<Post>> getPosts() async {

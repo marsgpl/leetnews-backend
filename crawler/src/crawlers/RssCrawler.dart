@@ -96,11 +96,17 @@ abstract class RssCrawler {
     }
 
     // Sat, 09 May 2020 19:51:00 +0300 -> 2002-02-27T14:00:00-0500
+    // 09 May 2020 04:39:00 +0000
     DateTime parsePubDate(String rssDateFmt) {
         if (rssDateFmt.length == 0) return DateTime.now();
         final parts = rssDateFmt.trim().split(' ');
-        return DateTime.parse(
-            '${parts[3]}-${monthNameToNumber(parts[2])}-${parts[1]}T${parts[4]}${parts[5]}');
+        final tz = parts[parts.length - 1]; // +0300
+        final hms = parts[parts.length - 2]; // 04:39:00
+        final year = parts[parts.length - 3]; // 2020
+        final monthName = parts[parts.length - 4]; // May
+        final day = parts[parts.length - 5]; // 09
+
+        return DateTime.parse('$year-${monthNameToNumber(monthName)}-${day}T$hms$tz');
     }
 
     // May -> 05

@@ -51,3 +51,4 @@
 
     use news;
     db.posts.ensureIndex({ "pubDate": 1 });
+    db.posts.ensureIndex({ "category": 1 });

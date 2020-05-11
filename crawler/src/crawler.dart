@@ -3,6 +3,7 @@ import 'package:mongo_dart/mongo_dart.dart';
 import './crawlers/RbcRuRssCrawler.dart';
 import './crawlers/LentaRuRssCrawler.dart';
 import './crawlers/RussianRtComRssCrawler.dart';
+import './crawlers/NewsYandexRuRssCrawler.dart';
 import './crawlers/NewsRamblerRuRssCrawler.dart';
 import './entities/Post.dart';
 
@@ -21,6 +22,7 @@ Future<void> main() async {
         RbcRuRssCrawler(mongo),
         LentaRuRssCrawler(mongo),
         RussianRtComRssCrawler(mongo),
+        NewsYandexRuRssCrawler(mongo),
         NewsRamblerRuRssCrawler(mongo),
     ];
 
@@ -32,8 +34,7 @@ Future<void> main() async {
     }
 }
 
-// TODO: select duplicate pubDate's
-// TODO: latestPost must be affected by crawlers.map
+// TODO: select only pubDate's duplicates
 Future<void> fixSamePubDates(Db mongo, Post latestPost) async {
     final postsColl = mongo.collection('posts');
     final selector = where;
