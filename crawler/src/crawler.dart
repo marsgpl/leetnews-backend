@@ -18,20 +18,22 @@ Future<void> main() async {
 
     print('Mongo ready');
 
-    final crawlers = [
-        RbcRuRssCrawler(mongo),
-        LentaRuRssCrawler(mongo),
-        RussianRtComRssCrawler(mongo),
-        NewsYandexRuRssCrawler(mongo),
-        NewsRamblerRuRssCrawler(mongo),
-    ];
+    await dedupPosts(mongo);
 
-    while (true) {
-        final latestPost = await getLatestPost(mongo);
-        await Future.wait(crawlers.map((crawler) => crawler.crawl(latestPost)));
-        await fixSamePubDates(mongo, latestPost);
-        await Future.delayed(const Duration(seconds: DELAY_BETWEEN_ITERATIONS_SECONDS));
-    }
+    // final crawlers = [
+    //     RbcRuRssCrawler(mongo),
+    //     LentaRuRssCrawler(mongo),
+    //     RussianRtComRssCrawler(mongo),
+    //     NewsYandexRuRssCrawler(mongo),
+    //     NewsRamblerRuRssCrawler(mongo),
+    // ];
+
+    // while (true) {
+    //     final latestPost = await getLatestPost(mongo);
+    //     await Future.wait(crawlers.map((crawler) => crawler.crawl(latestPost)));
+    //     await fixSamePubDates(mongo, latestPost);
+    //     await Future.delayed(const Duration(seconds: DELAY_BETWEEN_ITERATIONS_SECONDS));
+    // }
 }
 
 // TODO: select only pubDate's duplicates
@@ -85,4 +87,52 @@ Future<Post> getLatestPost(Db mongo) async {
         .findOne(selector);
 
     return row == null ? null : Post.fromMongo(row);
+}
+
+Future<void> dedupPosts(Db mongo) async {
+    final postsColl = mongo.collection('posts');
+
+    print('posts before: ${await postsColl.count()}');
+
+    final pipeline = AggregationPipelineBuilder()
+        .addStage(Match(where.ne('origId', null).map['\$query']))
+        .addStage(Group(
+            id: Field('origId'),
+            fields: {
+                'count': Sum(1),
+                'ids': Push(Field('_id')),
+            },
+        ))
+        .addStage(Match(where.gt('count', 1).map['\$query']))
+        .addStage(Sort({ 'count': -1 }))
+        .addStage(Project({
+            '_id': 0,
+            'origId': '\$_id',
+            'count': '\$count',
+            'ids': '\$ids',
+        }))
+        .build();
+
+    final result = await postsColl.aggregateToStream(pipeline).toList();
+
+    int dupRecsTotal = 0;
+    int dupIdsTotal = 0;
+    List<ObjectId> dupIdsToRemove = [];
+
+    for (final rec in result) {
+        dupRecsTotal++;
+        dupIdsTotal += rec['ids'].length;
+
+        for (int i = 0, c = rec['ids'].length - 1; i < c; ++i) {
+            dupIdsToRemove.add(rec['ids'][i]);
+        }
+    }
+
+    print('dupRecsTotal: $dupRecsTotal');
+    print('dupIdsTotal: $dupIdsTotal');
+    print('dupIdsToRemove: ${dupIdsToRemove.length}');
+
+    await postsColl.remove(where.oneFrom('_id', dupIdsToRemove));
+
+    print('posts after: ${await postsColl.count()}');
 }
