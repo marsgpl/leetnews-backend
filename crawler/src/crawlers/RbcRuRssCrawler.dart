@@ -10,7 +10,7 @@ class RbcRuRssCrawler extends RssCrawler {
     String rssFeed = 'http://static.feed.rbc.ru/rbc/logical/footer/news.rss';
     String origName = 'rbc.ru';
 
-    List<Post> convertFeedToPosts(xml.XmlDocument feed) {
+    List<Post> convertRssFeedToPosts(xml.XmlDocument feed) {
         final List<Post> posts = [];
 
         feed.findElements('rss').forEach((rss) {
@@ -24,6 +24,7 @@ class RbcRuRssCrawler extends RssCrawler {
 
                     final description = item.findElements('description');
                     final enclosure = item.findElements('enclosure');
+                    final category = item.findElements('category');
                     final pubDate = item.findElements('pubDate');
                     final author = item.findElements('author');
                     final title = item.findElements('title');
@@ -34,7 +35,7 @@ class RbcRuRssCrawler extends RssCrawler {
                         title: parseTitle(title.isEmpty ? '' : title.single.text),
                         text: parseDescription(description.isEmpty ? '' : description.single.text),
                         author: parseAuthor(author.isEmpty ? '' : author.single.text),
-                        category: 'Россия',
+                        category: parseCategory(category.isEmpty ? 'Россия' : category.single.text),
                         imgUrl: enclosure.isEmpty ? '' : parseImgUrl(enclosure.single.attributes),
                         imgMime: enclosure.isEmpty ? '' : parseImgMime(enclosure.single.attributes),
                         lang: lang,

@@ -6,7 +6,7 @@ import 'package:html/parser.dart' as html;
 
 import '../entities/Post.dart';
 
-class RssCrawler {
+abstract class RssCrawler {
     RssCrawler(this.mongo);
 
     Db mongo;
@@ -15,7 +15,7 @@ class RssCrawler {
 
     RegExp htmlAnchor = RegExp(r'<a .*?</a>');
 
-    Future<void> crawl() async {
+    Future<void> crawl(Post latestPost) async {
         try {
             final newPosts = await getPosts();
 
@@ -25,7 +25,8 @@ class RssCrawler {
 
             final postsColl = mongo.collection('posts');
 
-            List<String> origIds = newPosts.map((post) => post.origId).toList();
+            List<String> origIds = newPosts.map((post) => post.origId)
+                .toList(growable: false);
 
             final existingPosts = postsColl
                 .find(where.oneFrom('origId', origIds).fields(['origId']));
@@ -43,6 +44,10 @@ class RssCrawler {
                     return;
                 }
 
+                if (post.pubDate.compareTo(latestPost.pubDate) < 0) {
+                    latestPost.pubDate = post.pubDate;
+                }
+
                 postsToInsert.add(post.toMongo());
             });
 
@@ -55,20 +60,20 @@ class RssCrawler {
     }
 
     Future<List<Post>> getPosts() async {
+        return convertRssFeedToPosts(await crawlRssFeed(rssFeed));
+    }
+
+    Future<xml.XmlDocument> crawlRssFeed(String feed) async {
         HttpClient client = HttpClient();
-        final request = await client.getUrl(Uri.parse('$rssFeed?v=${DateTime.now()}'));
+        final request = await client.getUrl(Uri.parse('$feed?v=${DateTime.now()}'));
         final response = await request.close();
 
         final List<String> responseChunks = [];
         await utf8.decoder.bind(response).forEach(responseChunks.add);
-        final feed = xml.parse(responseChunks.join(''));
-
-        return convertFeedToPosts(feed);
+        return xml.parse(responseChunks.join(''));
     }
 
-    List<Post> convertFeedToPosts(xml.XmlDocument feed) {
-        return [];
-    }
+    List<Post> convertRssFeedToPosts(xml.XmlDocument feed);
 
     String parseImgUrl(dynamic attributes) {
         for (final attribute in attributes) {

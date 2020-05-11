@@ -1,8 +1,9 @@
 import 'package:mongo_dart/mongo_dart.dart';
 
-import './crawlers/LentaRuRssCrawler.dart';
 import './crawlers/RbcRuRssCrawler.dart';
+import './crawlers/LentaRuRssCrawler.dart';
 import './crawlers/RussianRtComRssCrawler.dart';
+import './crawlers/NewsRamblerRuRssCrawler.dart';
 import './entities/Post.dart';
 
 const MONGO_PATH = 'mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/admin';
@@ -17,24 +18,28 @@ Future<void> main() async {
     print('Mongo ready');
 
     final crawlers = [
-        LentaRuRssCrawler(mongo),
         RbcRuRssCrawler(mongo),
+        LentaRuRssCrawler(mongo),
         RussianRtComRssCrawler(mongo),
+        NewsRamblerRuRssCrawler(mongo),
     ];
 
     while (true) {
         final latestPost = await getLatestPost(mongo);
-        await Future.wait(crawlers.map((crawler) => crawler.crawl()));
+        await Future.wait(crawlers.map((crawler) => crawler.crawl(latestPost)));
         await fixSamePubDates(mongo, latestPost);
         await Future.delayed(const Duration(seconds: DELAY_BETWEEN_ITERATIONS_SECONDS));
     }
 }
 
+// TODO: select duplicate pubDate's
+// TODO: latestPost must be affected by crawlers.map
 Future<void> fixSamePubDates(Db mongo, Post latestPost) async {
     final postsColl = mongo.collection('posts');
     final selector = where;
 
     if (latestPost != null) {
+        latestPost.pubDate = DateTime(2010);
         selector.gte('pubDate', latestPost.pubDate);
     }
 

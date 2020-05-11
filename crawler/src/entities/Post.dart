@@ -22,7 +22,7 @@ class Post implements Comparable<Post> {
 
     final String id;
     final DateTime createdAt;
-    final DateTime pubDate;
+    DateTime pubDate;
     String title;
     String text;
     String author;

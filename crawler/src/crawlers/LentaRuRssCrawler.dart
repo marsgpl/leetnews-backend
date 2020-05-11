@@ -10,7 +10,7 @@ class LentaRuRssCrawler extends RssCrawler {
     String rssFeed = 'http://lenta.ru/rss/news';
     String origName = 'lenta.ru';
 
-    List<Post> convertFeedToPosts(xml.XmlDocument feed) {
+    List<Post> convertRssFeedToPosts(xml.XmlDocument feed) {
         final List<Post> posts = [];
 
         feed.findElements('rss').forEach((rss) {
