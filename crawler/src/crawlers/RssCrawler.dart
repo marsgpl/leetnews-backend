@@ -1,92 +1,79 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:mongo_dart/mongo_dart.dart';
+import 'dart:convert';
 import 'package:xml/xml.dart' as xml;
 import 'package:html/parser.dart' as html;
 
+import '../Context.dart';
 import '../entities/Post.dart';
 
 abstract class RssCrawler {
-    RssCrawler(this.mongo);
+    final htmlAnchor = RegExp(r'<a .*?</a>',
+        multiLine: true,
+        caseSensitive: false,
+        dotAll: true);
 
-    Db mongo;
-    String rssFeed;
+    final urlQueryRemover = RegExp(r'\?.*?$',
+        multiLine: true,
+        dotAll: true);
+
     String origName;
+    String rssFeed;
+    List<String> rssFeeds;
 
-    RegExp htmlAnchor = RegExp(r'<a .*?</a>');
-
-    Future<int> crawl(Post latestPost) async {
+    Future<List<Post>> crawl(Context context) async {
         try {
-            Map<String, bool> postIdCache = {};
+            return (await getPosts()).where((post) {
+                if (context.postsOrigIdCache[post.origId] != null) {
+                    return false;
+                }
 
-            final newPosts = (await getPosts()).where((post) {
-                if (postIdCache[post.origId] != null) return false;
-                String postTextId = post.title + post.text;
-                if (postIdCache[postTextId] != null) return false;
-                postIdCache[post.origId] = true;
-                postIdCache[postTextId] = true;
+                context.postsOrigIdCache[post.origId] = true;
+
+                if (post.title.length == 0) {
+                    return false;
+                }
+
+                if (post.category.length == 0) {
+                    post.category = 'Россия';
+                }
+
                 return true;
             }).toList();
-
-            if (newPosts.length == 0) {
-                throw Exception('$origName: newPosts.length == 0');
-            }
-
-            final posts = mongo.collection('posts');
-
-            List<String> origIds = newPosts.map((post) => post.origId)
-                .toList(growable: false);
-
-            final existingPosts = posts.find(where
-                .oneFrom('origId', origIds)
-                .fields(['origId']));
-
-            final Map<String, bool> existingOrigIds = {};
-
-            await existingPosts.forEach((post) {
-                existingOrigIds[post['origId']] = true;
-            });
-
-            List<Map<String, dynamic>> postsToInsert = [];
-
-            newPosts.forEach((post) {
-                if (existingOrigIds[post.origId] != null) {
-                    return;
-                }
-
-                if (post.pubDate.isBefore(latestPost.pubDate)) {
-                    latestPost.pubDate = post.pubDate.add(Duration(seconds: 0));
-                }
-
-                postsToInsert.add(post.toMongo());
-            });
-
-            if (postsToInsert.length > 0) {
-                await posts.insertAll(postsToInsert);
-            }
-
-            return postsToInsert.length;
         } catch (error) {
             print('$origName: crawl failed: $error');
-            return 0;
+            return [];
         }
     }
 
     Future<List<Post>> getPosts() async {
-        return convertRssFeedToPosts(await crawlRssFeed(rssFeed));
-    }
+        if (rssFeed != null) {
+            return convertRssFeedToPosts(await crawlRssFeed(rssFeed));
+        } else if (rssFeeds != null) {
+            List<Post> candidates = [];
 
-    Future<xml.XmlDocument> crawlRssFeed(String feed) async {
-        HttpClient client = HttpClient();
-        final request = await client.getUrl(Uri.parse('$feed?v=${DateTime.now()}'));
-        final response = await request.close();
+            final feeds = await Future.wait(rssFeeds.map(crawlRssFeed));
+            final candidatesMap = feeds.map(convertRssFeedToPosts);
 
-        final List<String> responseChunks = [];
-        await utf8.decoder.bind(response).forEach(responseChunks.add);
-        return xml.parse(responseChunks.join(''));
+            for (final candidatesChunk in candidatesMap) {
+                candidates += candidatesChunk;
+            }
+
+            return candidates;
+        } else {
+            throw Exception('rssFeed and rssFeeds are null');
+        }
     }
 
     List<Post> convertRssFeedToPosts(xml.XmlDocument feed);
+
+    Future<xml.XmlDocument> crawlRssFeed(String feed) async {
+        final date = DateTime.now().toIso8601String();
+        final client = HttpClient();
+        final request = await client.getUrl(Uri.parse('$feed?date=${date}'));
+        final response = await request.close();
+        final List<String> responseChunks = await utf8.decoder.bind(response).toList();
+        return xml.parse(responseChunks.join(''));
+    }
 
     String parseImgUrl(dynamic attributes) {
         for (final attribute in attributes) {
@@ -112,6 +99,7 @@ abstract class RssCrawler {
     // 09 May 2020 04:39:00 +0000
     DateTime parsePubDate(String rssDateFmt) {
         if (rssDateFmt.length == 0) return DateTime.now();
+
         final parts = rssDateFmt.trim().split(' ');
         final tz = parts[parts.length - 1]; // +0300
         final hms = parts[parts.length - 2]; // 04:39:00
@@ -155,8 +143,15 @@ abstract class RssCrawler {
     String parseTitle(String text) =>
         removeCdata(text).trim();
 
-    String parseGuid(String text) =>
-        removeCdata(text).trim();
+    String parseGuid(String text, { bool removeUrlQuery = false }) {
+        text = removeCdata(text).trim();
+
+        if (removeUrlQuery) {
+            text = text.replaceAll(urlQueryRemover, '');
+        }
+
+        return text.length > 0 ? text : DateTime.now().toIso8601String();
+    }
 
     String parseLink(String text) =>
         removeCdata(text).trim();

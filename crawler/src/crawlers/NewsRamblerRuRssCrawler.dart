@@ -1,12 +1,10 @@
-import 'package:mongo_dart/mongo_dart.dart';
 import 'package:xml/xml.dart' as xml;
 
 import '../entities/Post.dart';
 import './RssCrawler.dart';
 
 class NewsRamblerRuRssCrawler extends RssCrawler {
-    NewsRamblerRuRssCrawler(Db mongo) : super(mongo);
-
+    String origName = 'news.rambler.ru';
     List<String> rssFeeds = [
         'http://news.rambler.ru/rss/world/',
         'http://news.rambler.ru/rss/moscow_city/',
@@ -18,33 +16,14 @@ class NewsRamblerRuRssCrawler extends RssCrawler {
         'http://news.rambler.ru/rss/army/',
     ];
 
-    String origName = 'news.rambler.ru';
-
-    Future<List<Post>> getPosts() async {
-        List<Post> postsList = [];
-
-        final feeds = await Future.wait(rssFeeds.map(crawlRssFeed));
-        final postsMap = feeds.map(convertRssFeedToPosts);
-
-        for (final postsListPart in postsMap) {
-            postsList += postsListPart;
-        }
-
-        return postsList;
-    }
-
     List<Post> convertRssFeedToPosts(xml.XmlDocument feed) {
-        final List<Post> postsList = [];
+        final List<Post> candidates = [];
 
         feed.findElements('rss').forEach((rss) {
             rss.findElements('channel').forEach((channel) {
                 final lang = channel.findElements('language').single.text.trim().toLowerCase();
 
                 channel.findElements('item').forEach((item) {
-                    final guid = item.findElements('guid');
-                    final origId = parseGuid(guid.isEmpty ? '' : guid.single.text);
-                    if (origId.length == 0) return;
-
                     final description = item.findElements('description');
                     final enclosure = item.findElements('enclosure');
                     final category = item.findElements('category');
@@ -52,8 +31,13 @@ class NewsRamblerRuRssCrawler extends RssCrawler {
                     final author = item.findElements('author');
                     final title = item.findElements('title');
                     final link = item.findElements('link');
+                    final guid = item.findElements('guid');
 
-                    postsList.add(Post(
+                    candidates.add(Post(
+                        lang: lang,
+                        origName: origName,
+                        origId: parseGuid(guid.isEmpty ? '' : guid.single.text),
+                        origLink: parseLink(link.isEmpty ? '' : link.single.text),
                         pubDate: parsePubDate(pubDate.isEmpty ? '' : pubDate.single.text),
                         title: parseTitle(title.isEmpty ? '' : title.single.text),
                         text: parseDescription(description.isEmpty ? '' : description.single.text),
@@ -61,15 +45,11 @@ class NewsRamblerRuRssCrawler extends RssCrawler {
                         category: parseCategory(category.isEmpty ? '' : category.single.text),
                         imgUrl: enclosure.isEmpty ? '' : parseImgUrl(enclosure.single.attributes),
                         imgMime: enclosure.isEmpty ? '' : parseImgMime(enclosure.single.attributes),
-                        lang: lang,
-                        origId: origId,
-                        origLink: parseLink(link.isEmpty ? '' : link.single.text),
-                        origName: origName,
                     ));
                 });
             });
         });
 
-        return postsList;
+        return candidates;
     }
 }

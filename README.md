@@ -55,7 +55,9 @@
     db.posts.find(
         {$text: {$search: "Заразившаяся коронавирусом Татьяна Навка показала фото"}},
         {score: {$meta: "textScore"}}
-    ).sort({ score: { $meta: "textScore" } });
+    ).sort({
+        score: { $meta: "textScore" }
+    });
 
     db.posts.aggregate(
         {$match: {origId: {$ne: null}}},
@@ -67,10 +69,10 @@
 ## DB indexes
 
     use news;
-    db.posts.ensureIndex({ "pubDate": 1 });
+    db.posts.ensureIndex({ "pubDate": 1 }, { "unique": true });
     db.posts.ensureIndex({ "category": 1 });
     db.posts.ensureIndex({ "origId": 1 }, { "unique": true });
-    db.posts.ensureIndex({ "title": "text", "text": "text" });
+    db.posts.ensureIndex({ "title": "text" });
     db.posts.getIndexes();
 
 ## Move DB posts to local

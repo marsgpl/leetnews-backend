@@ -8,16 +8,16 @@ Future<Map<String, dynamic>> getCategories(
     Db mongo,
 ) async {
     final posts = mongo.collection('posts');
-    final distinct = await posts.distinct('category');
+    final records = await posts.distinct('category');
 
     List<Category> categories = [];
 
-    for (String title in distinct.values.first) {
-        if (title.length == 0) continue;
+    for (String categoryTitle in records.values.first) {
+        if (categoryTitle.length == 0) continue;
 
         categories.add(Category(
-            id: title,
-            title: title,
+            id: categoryTitle,
+            title: categoryTitle,
         ));
     }
 
