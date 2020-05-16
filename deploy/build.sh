@@ -6,7 +6,7 @@ cd deploy/$SERVICE || exit 1
 
 DAY_HASH="$(date +"%Y-%m-%d")"
 DART_HASH="$(sha256sum ../../$SERVICE/pubspec.lock | cut -d " " -f 1)"
-IMAGE_TAG="docker.marsgpl.com/leetnews/$SERVICE:latest"
+IMAGE_TAG="docker.marsgpl.com/leetnews/${SERVICE}:latest"
 
 echo "clean previous build ..."
     rm -rf image || exit 1
