@@ -10,13 +10,11 @@ import './methods/manifest.dart';
 import './methods/getPosts.dart';
 import './methods/getCategories.dart';
 
-const MONGO_PATH = 'mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/admin';
-const MONGO_DB = 'news';
+const MONGO_PATH = 'mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/news?authSource=admin&appName=api';
 
 Future<void> main() async {
     Db mongo = Db(MONGO_PATH);
     await mongo.open();
-    mongo.databaseName = MONGO_DB;
 
     print('Mongo ready');
 

@@ -9,6 +9,7 @@ services:
         environment:
             - MONGO_INITDB_ROOT_USERNAME=root
             - MONGO_INITDB_ROOT_PASSWORD=nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2
+        command: --quiet
     crawler:
         image: docker.marsgpl.com/leetnews/crawler:latest
         restart: always

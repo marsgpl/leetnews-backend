@@ -11,7 +11,7 @@ class RbcRuRssCrawler extends RssCrawler {
     String origName = 'rbc.ru';
 
     List<Post> convertRssFeedToPosts(xml.XmlDocument feed) {
-        final List<Post> posts = [];
+        final List<Post> postsList = [];
 
         feed.findElements('rss').forEach((rss) {
             rss.findElements('channel').forEach((channel) {
@@ -30,7 +30,7 @@ class RbcRuRssCrawler extends RssCrawler {
                     final title = item.findElements('title');
                     final link = item.findElements('link');
 
-                    posts.add(Post(
+                    postsList.add(Post(
                         pubDate: parsePubDate(pubDate.isEmpty ? '' : pubDate.single.text),
                         title: parseTitle(title.isEmpty ? '' : title.single.text),
                         text: parseDescription(description.isEmpty ? '' : description.single.text),
@@ -47,6 +47,6 @@ class RbcRuRssCrawler extends RssCrawler {
             });
         });
 
-        return posts;
+        return postsList;
     }
 }

@@ -7,8 +7,8 @@ Future<Map<String, dynamic>> getCategories(
     HttpRequest request,
     Db mongo,
 ) async {
-    final postsColl = mongo.collection('posts');
-    final distinct = await postsColl.distinct('category');
+    final posts = mongo.collection('posts');
+    final distinct = await posts.distinct('category');
 
     List<Category> categories = [];
 

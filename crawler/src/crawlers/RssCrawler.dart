@@ -15,12 +15,16 @@ abstract class RssCrawler {
 
     RegExp htmlAnchor = RegExp(r'<a .*?</a>');
 
-    Future<void> crawl(Post latestPost) async {
+    Future<int> crawl(Post latestPost) async {
         try {
             Map<String, bool> postIdCache = {};
+
             final newPosts = (await getPosts()).where((post) {
                 if (postIdCache[post.origId] != null) return false;
+                String postTextId = post.title + post.text;
+                if (postIdCache[postTextId] != null) return false;
                 postIdCache[post.origId] = true;
+                postIdCache[postTextId] = true;
                 return true;
             }).toList();
 
@@ -28,13 +32,14 @@ abstract class RssCrawler {
                 throw Exception('$origName: newPosts.length == 0');
             }
 
-            final postsColl = mongo.collection('posts');
+            final posts = mongo.collection('posts');
 
             List<String> origIds = newPosts.map((post) => post.origId)
                 .toList(growable: false);
 
-            final existingPosts = postsColl
-                .find(where.oneFrom('origId', origIds).fields(['origId']));
+            final existingPosts = posts.find(where
+                .oneFrom('origId', origIds)
+                .fields(['origId']));
 
             final Map<String, bool> existingOrigIds = {};
 
@@ -49,20 +54,21 @@ abstract class RssCrawler {
                     return;
                 }
 
-                if (latestPost == null) {
-                    latestPost = Post(pubDate: post.pubDate);
-                } else if (post.pubDate.compareTo(latestPost.pubDate) < 0) {
-                    latestPost.pubDate = post.pubDate;
+                if (post.pubDate.isBefore(latestPost.pubDate)) {
+                    latestPost.pubDate = post.pubDate.add(Duration(seconds: 0));
                 }
 
                 postsToInsert.add(post.toMongo());
             });
 
             if (postsToInsert.length > 0) {
-                await postsColl.insertAll(postsToInsert);
+                await posts.insertAll(postsToInsert);
             }
+
+            return postsToInsert.length;
         } catch (error) {
             print('$origName: crawl failed: $error');
+            return 0;
         }
     }
 

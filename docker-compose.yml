@@ -1,18 +1,6 @@
 version: '3.3'
 
 services:
-    api:
-        build: ./api
-        restart: "no"
-        volumes:
-            - ./api/src/:/leetnews/api/src/:ro
-        ports:
-            - 127.0.0.1:41080:80
-    crawler:
-        build: ./crawler
-        restart: "no"
-        volumes:
-            - ./crawler/src/:/leetnews/crawler/src/:ro
     mongo:
         image: mongo:4.2.6-bionic
         restart: "no"
@@ -21,3 +9,16 @@ services:
         environment:
             - MONGO_INITDB_ROOT_USERNAME=root
             - MONGO_INITDB_ROOT_PASSWORD=nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2
+        command: --quiet
+    crawler:
+        build: ./crawler
+        restart: "no"
+        volumes:
+            - ./crawler/src/:/leetnews/crawler/src/:ro
+    api:
+        build: ./api
+        restart: "no"
+        volumes:
+            - ./api/src/:/leetnews/api/src/:ro
+        ports:
+            - 127.0.0.1:41080:80

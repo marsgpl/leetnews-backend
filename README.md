@@ -39,11 +39,13 @@
         show databases;
         use news;
         show collections;
-
-        db.posts.count({});
+        db.posts.count();
         db.posts.find({}).limit(1).pretty();
         db.posts.remove({});
         db.posts.drop();
+        db.posts.find({ "title": /^Заразившаяся коронавирусом Татьяна Навка показала фото из больницы/ }).pretty();
+        db.categories.count();
+        db.getProfilingLevel();
 
         db.posts.aggregate(
             {"$match": {"origId": {"$ne": null}}},
@@ -52,11 +54,22 @@
             {"$sort": {"count": -1}},
             {"$project": {"origId": "$_id", "_id": 0}})
 
-        db.categories.count({});
-
 ## Indexes
 
     use news;
     db.posts.ensureIndex({ "pubDate": 1 });
     db.posts.ensureIndex({ "category": 1 });
     db.posts.ensureIndex({ "origId": 1 }, { "unique": true });
+db.posts.ensureIndex({ "title": "text" });
+db.posts.ensureIndex({ "text": "text" });
+    db.posts.getIndexes();
+
+## Move DB posts to local
+
+    ssh leetnews@marsgpl 'docker exec -t leetnews_mongo_1 mongoexport --uri="mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/news?authSource=admin" --collection=posts --out=/data/db/posts.json'
+
+    scp leetnews@marsgpl:/home/leetnews/mongo-data/posts.json mongo-data/
+
+    ssh root@marsgpl 'rm /home/leetnews/mongo-data/posts.json'
+
+    docker exec -t leetnews_mongo_1 mongoimport --uri="mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/news?authSource=admin" --collection=posts --file=/data/db/posts.json --drop

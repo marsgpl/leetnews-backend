@@ -19,7 +19,7 @@ Future<Map<String, dynamic>> getPosts(
     final limit = max(1, min(40, int.parse(params['limit'] ?? '20')));
     final langs = (params['langs'] ?? 'ru');
 
-    final postsColl = mongo.collection('posts');
+    final posts = mongo.collection('posts');
     final selector = where;
 
     if (lastId.length > 0) {
@@ -44,16 +44,16 @@ Future<Map<String, dynamic>> getPosts(
         .sortBy('pubDate', descending: true)
         .limit(limit);
 
-    final List<Post> posts = await postsColl
+    final List<Post> postsList = await posts
         .find(selector)
         .map((row) => Post.fromMongo(row))
         .toList();
 
-    String nextLastId = posts.length == 0 ? '' :
-        posts[posts.length - 1].pubDate.toString();
+    String nextLastId = postsList.length == 0 ? '' :
+        postsList[postsList.length - 1].pubDate.toString();
 
     return {
-        'posts': posts,
+        'posts': postsList,
         'lastId': nextLastId,
     };
 }

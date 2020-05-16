@@ -7,18 +7,16 @@ import './crawlers/NewsYandexRuRssCrawler.dart';
 import './crawlers/NewsRamblerRuRssCrawler.dart';
 import './entities/Post.dart';
 
-const MONGO_PATH = 'mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/admin';
-const MONGO_DB = 'news';
+const MONGO_PATH = 'mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/news?authSource=admin&appName=crawler';
 const DELAY_BETWEEN_ITERATIONS_SECONDS = 60 * 5;
 
 Future<void> main() async {
     Db mongo = Db(MONGO_PATH);
     await mongo.open();
-    mongo.databaseName = MONGO_DB;
 
     print('Mongo ready');
 
-    // await dedupPosts(mongo);
+    // await dedupPostsByOrigId(mongo);
 
     final crawlers = [
         RbcRuRssCrawler(mongo),
@@ -30,72 +28,115 @@ Future<void> main() async {
 
     while (true) {
         final latestPost = await getLatestPost(mongo);
-        await Future.wait(crawlers.map((crawler) => crawler.crawl(latestPost)));
-        await fixSamePubDates(mongo, latestPost);
+
+        final inserted = await Future.wait(crawlers.map((crawler) => crawler.crawl(latestPost)));
+
+        if (inserted.fold(0, (a, b) => a + b) > 0) {
+            await fixSamePubDates(mongo, latestPost);
+        }
+
         await Future.delayed(const Duration(seconds: DELAY_BETWEEN_ITERATIONS_SECONDS));
     }
 }
 
-// TODO: select only pubDate's duplicates
-Future<void> fixSamePubDates(Db mongo, Post latestPost) async {
-    final postsColl = mongo.collection('posts');
-    final selector = where;
+Future<Post> getLatestPost(Db mongo) async {
+    final posts = mongo.collection('posts');
 
-    if (latestPost != null) {
-        selector.gte('pubDate', latestPost.pubDate);
+    final selector = where
+        .sortBy('pubDate', descending: true)
+        .limit(1);
+
+    final row = await posts.findOne(selector);
+
+    return row == null ?
+        Post(pubDate: DateTime.now()) :
+        Post.fromMongo(row);
+}
+
+Future<void> fixSamePubDates(Db mongo, Post latestPost) async {
+    final posts = mongo.collection('posts');
+
+    final digDateLimit = DateTime.now().subtract(Duration(days: 7));
+
+    if (latestPost.pubDate.isBefore(digDateLimit)) {
+        latestPost.pubDate = digDateLimit;
     }
 
-    selector
-        .sortBy('pubDate', descending: false)
-        .limit(9999);
+    final pipeline = AggregationPipelineBuilder()
+// .addStage(Match(where.gte('pubDate', latestPost.pubDate).map['\$query']))
+        .addStage(Group(
+            id: Field('pubDate'),
+            fields: {
+                'count': Sum(1),
+            },
+        ))
+        .addStage(Match(where.gt('count', 1).map['\$query']))
+        .addStage(Project({
+            '_id': 0,
+            'pubDate': '\$_id',
+        }))
+        .build();
 
-    final rows = await postsColl
-        .find(selector)
+    final result = await posts
+        .aggregateToStream(pipeline)
         .toList();
-
-    if (rows.length < 2) return;
-
-    DateTime latest;
-    int deltaMs;
 
     List<Future> tasks = [];
 
-    rows.forEach((row) {
-        DateTime current = row['pubDate'];
+    for (final rec in result) {
+        tasks.add(fixSamePubDate(mongo, rec['pubDate']));
+    }
 
-        if (latest == null || !latest.isAtSameMomentAs(current)) {
-            latest = current;
-            deltaMs = 0;
-        } else {
-            row['pubDate'] = current.add(Duration(milliseconds: ++deltaMs));
-            tasks.add(postsColl.save(row));
-        }
-    });
+    if (tasks.length > 0) {
+        await Future.wait(tasks);
+    }
+print('total tasks done: ${tasks.length}');
+}
+
+Future<void> fixSamePubDate(Db mongo, DateTime pubDate) async {
+    final posts = mongo.collection('posts');
+
+    final dateFrom = DateTime(
+        pubDate.year,
+        pubDate.month,
+        pubDate.day,
+        pubDate.hour,
+        pubDate.minute,
+        pubDate.second,
+        0,
+        0,
+    );
+
+    final dateTo = dateFrom.add(Duration(seconds: 1));
+
+    final selector = where
+        .gte('pubDate', dateFrom)
+        .lt('pubDate', dateTo)
+        .sortBy('pubDate', descending: false);
+
+    final rows = await posts.find(selector).toList();
+
+    List<Future> tasks = [];
+    int deltaMs = 0;
+
+    for (final row in rows) {
+        row['pubDate'] = dateFrom.add(Duration(milliseconds: deltaMs++));
+        tasks.add(posts.save(row));
+    }
 
     if (tasks.length > 0) {
         await Future.wait(tasks);
     }
 }
 
-Future<Post> getLatestPost(Db mongo) async {
-    final postsColl = mongo.collection('posts');
-    final selector = where
-        .sortBy('pubDate', descending: true)
-        .limit(1);
+Future<void> dedupPostsByOrigId(Db mongo) async {
+    final posts = mongo.collection('posts');
 
-    final row = await postsColl
-        .findOne(selector);
+    print('> deduping posts by orig id');
 
-    return row == null ? null : Post.fromMongo(row);
-}
-
-Future<void> dedupPosts(Db mongo) async {
-    final postsColl = mongo.collection('posts');
-
-    print('posts before: ${await postsColl.count()}');
+    print('posts before: ${await posts.count()}');
 
     final pipeline = AggregationPipelineBuilder()
-        .addStage(Match(where.ne('origId', null).map['\$query']))
         .addStage(Group(
             id: Field('origId'),
             fields: {
@@ -113,7 +154,9 @@ Future<void> dedupPosts(Db mongo) async {
         }))
         .build();
 
-    final result = await postsColl.aggregateToStream(pipeline).toList();
+    final result = await posts
+        .aggregateToStream(pipeline)
+        .toList();
 
     int dupRecsTotal = 0;
     int dupIdsTotal = 0;
@@ -121,9 +164,9 @@ Future<void> dedupPosts(Db mongo) async {
 
     for (final rec in result) {
         dupRecsTotal++;
-        dupIdsTotal += rec['ids'].length;
+        dupIdsTotal += rec['count'];
 
-        for (int i = 0, c = rec['ids'].length - 1; i < c; ++i) {
+        for (int i = 1, c = rec['count']; i < c; ++i) {
             dupIdsToRemove.add(rec['ids'][i]);
         }
     }
@@ -132,7 +175,7 @@ Future<void> dedupPosts(Db mongo) async {
     print('dupIdsTotal: $dupIdsTotal');
     print('dupIdsToRemove: ${dupIdsToRemove.length}');
 
-    await postsColl.remove(where.oneFrom('_id', dupIdsToRemove));
+    await posts.remove(where.oneFrom('_id', dupIdsToRemove));
 
-    print('posts after: ${await postsColl.count()}');
+    print('posts after: ${await posts.count()}');
 }

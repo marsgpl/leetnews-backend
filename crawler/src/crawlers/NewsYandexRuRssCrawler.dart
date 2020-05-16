@@ -56,20 +56,20 @@ class NewsYandexRuRssCrawler extends RssCrawler {
     String origName = 'news.yandex.ru';
 
     Future<List<Post>> getPosts() async {
-        List<Post> posts = [];
+        List<Post> postsList = [];
 
         final feeds = await Future.wait(rssFeeds.map(crawlRssFeed));
-        final postsList = feeds.map(convertRssFeedToPosts);
+        final postsMap = feeds.map(convertRssFeedToPosts);
 
-        for (final postList in postsList) {
-            posts += postList;
+        for (final postsListPart in postsMap) {
+            postsList += postsListPart;
         }
 
-        return posts;
+        return postsList;
     }
 
     List<Post> convertRssFeedToPosts(xml.XmlDocument feed) {
-        final List<Post> posts = [];
+        final List<Post> postsList = [];
 
         feed.findElements('rss').forEach((rss) {
             rss.findElements('channel').forEach((channel) {
@@ -88,7 +88,7 @@ class NewsYandexRuRssCrawler extends RssCrawler {
                     final title = item.findElements('title');
                     final link = item.findElements('link');
 
-                    posts.add(Post(
+                    postsList.add(Post(
                         pubDate: parsePubDate(pubDate.isEmpty ? '' : pubDate.single.text),
                         title: parseTitle(title.isEmpty ? '' : title.single.text),
                         text: parseDescription(description.isEmpty ? '' : description.single.text),
@@ -105,6 +105,6 @@ class NewsYandexRuRssCrawler extends RssCrawler {
             });
         });
 
-        return posts;
+        return postsList;
     }
 }
