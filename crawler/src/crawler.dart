@@ -63,7 +63,7 @@ Future<void> fixSamePubDates(Db mongo, Post latestPost) async {
     }
 
     final pipeline = AggregationPipelineBuilder()
-// .addStage(Match(where.gte('pubDate', latestPost.pubDate).map['\$query']))
+        .addStage(Match(where.gte('pubDate', latestPost.pubDate).map['\$query']))
         .addStage(Group(
             id: Field('pubDate'),
             fields: {
@@ -90,7 +90,6 @@ Future<void> fixSamePubDates(Db mongo, Post latestPost) async {
     if (tasks.length > 0) {
         await Future.wait(tasks);
     }
-print('total tasks done: ${tasks.length}');
 }
 
 Future<void> fixSamePubDate(Db mongo, DateTime pubDate) async {
