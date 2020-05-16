@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
+import 'dart:convert';
 import 'package:mongo_dart/mongo_dart.dart';
 
 import './errorHandlers/methodNotAllowedForRoute.dart';
@@ -15,11 +15,9 @@ const MONGO_PATH = 'mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/
 Future<void> main() async {
     Db mongo = Db(MONGO_PATH);
     await mongo.open();
-
     print('Mongo ready');
 
     final server = await HttpServer.bind(InternetAddress.anyIPv4, 80);
-
     print('Listening on ${server.address.address}:${server.port}');
 
     await for (HttpRequest request in server) {
@@ -28,6 +26,7 @@ Future<void> main() async {
         final uri = request.uri;
 
         Map<String, dynamic> answer = {};
+        bool die = false;
 
         try {
             if (uri.path == '/api/manifest') {
@@ -45,6 +44,9 @@ Future<void> main() async {
             } else {
                 answer = await routeNotFound(request, mongo);
             }
+        } on ConnectionException catch(error) {
+            answer = await internalError(request, mongo, error);
+            die = true;
         } catch (error) {
             answer = await internalError(request, mongo, error);
         }
@@ -55,5 +57,9 @@ Future<void> main() async {
         response.write(json.encode(answer));
 
         await response.close();
+
+        if (die) {
+            exit(1);
+        }
     }
 }

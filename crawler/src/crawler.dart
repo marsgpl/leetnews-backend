@@ -1,22 +1,24 @@
 import 'package:mongo_dart/mongo_dart.dart';
+import './entities/Post.dart';
 
 import './crawlers/RbcRuRssCrawler.dart';
 import './crawlers/LentaRuRssCrawler.dart';
 import './crawlers/RussianRtComRssCrawler.dart';
 import './crawlers/NewsYandexRuRssCrawler.dart';
 import './crawlers/NewsRamblerRuRssCrawler.dart';
-import './entities/Post.dart';
 
 const MONGO_PATH = 'mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/news?authSource=admin&appName=crawler';
+
 const DELAY_BETWEEN_ITERATIONS_SECONDS = 60 * 5;
 
 Future<void> main() async {
     Db mongo = Db(MONGO_PATH);
     await mongo.open();
-
     print('Mongo ready');
 
-    // await dedupPostsByOrigId(mongo);
+//     // await dedupOrigIds(mongo);
+//     await dedupTitles(mongo);
+// return;
 
     final crawlers = [
         RbcRuRssCrawler(mongo),
@@ -26,13 +28,21 @@ Future<void> main() async {
         NewsRamblerRuRssCrawler(mongo),
     ];
 
+    DateTime perf;
+
     while (true) {
         final latestPost = await getLatestPost(mongo);
 
+        perf = DateTime.now();
+
         final inserted = await Future.wait(crawlers.map((crawler) => crawler.crawl(latestPost)));
 
+        print('crawl: ${DateTime.now().difference(perf).inMilliseconds}ms');
+
         if (inserted.fold(0, (a, b) => a + b) > 0) {
-            await fixSamePubDates(mongo, latestPost);
+            perf = DateTime.now();
+            await dedupPubDates(mongo, latestPost);
+            print('dedup pubDate: ${DateTime.now().difference(perf).inMilliseconds}ms');
         }
 
         await Future.delayed(const Duration(seconds: DELAY_BETWEEN_ITERATIONS_SECONDS));
@@ -53,10 +63,10 @@ Future<Post> getLatestPost(Db mongo) async {
         Post.fromMongo(row);
 }
 
-Future<void> fixSamePubDates(Db mongo, Post latestPost) async {
+Future<void> dedupPubDates(Db mongo, Post latestPost) async {
     final posts = mongo.collection('posts');
 
-    final digDateLimit = DateTime.now().subtract(Duration(days: 7));
+    final digDateLimit = DateTime.now().subtract(const Duration(days: 7));
 
     if (latestPost.pubDate.isBefore(digDateLimit)) {
         latestPost.pubDate = digDateLimit;
@@ -84,7 +94,7 @@ Future<void> fixSamePubDates(Db mongo, Post latestPost) async {
     List<Future> tasks = [];
 
     for (final rec in result) {
-        tasks.add(fixSamePubDate(mongo, rec['pubDate']));
+        tasks.add(dedupPubDate(mongo, rec['pubDate']));
     }
 
     if (tasks.length > 0) {
@@ -92,7 +102,7 @@ Future<void> fixSamePubDates(Db mongo, Post latestPost) async {
     }
 }
 
-Future<void> fixSamePubDate(Db mongo, DateTime pubDate) async {
+Future<void> dedupPubDate(Db mongo, DateTime pubDate) async {
     final posts = mongo.collection('posts');
 
     final dateFrom = DateTime(
@@ -128,10 +138,34 @@ Future<void> fixSamePubDate(Db mongo, DateTime pubDate) async {
     }
 }
 
-Future<void> dedupPostsByOrigId(Db mongo) async {
+Future<void> dedupTitles(Db mongo) async {
     final posts = mongo.collection('posts');
 
-    print('> deduping posts by orig id');
+    print('> deduping posts by title + text');
+
+    print('posts before: ${await posts.count()}');
+
+//
+
+    int dupRecsTotal = 0;
+    int dupIdsTotal = 0;
+    List<ObjectId> dupIdsToRemove = [];
+
+//
+
+    print('dupRecsTotal: $dupRecsTotal');
+    print('dupIdsTotal: $dupIdsTotal');
+    print('dupIdsToRemove: ${dupIdsToRemove.length}');
+
+    await posts.remove(where.oneFrom('_id', dupIdsToRemove));
+
+    print('posts after: ${await posts.count()}');
+}
+
+Future<void> dedupOrigIds(Db mongo) async {
+    final posts = mongo.collection('posts');
+
+    print('> deduping posts by origId');
 
     print('posts before: ${await posts.count()}');
 

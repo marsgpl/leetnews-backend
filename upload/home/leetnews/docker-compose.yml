@@ -3,6 +3,8 @@ version: '3.3'
 services:
     mongo:
         image: mongo:4.2.6-bionic
+        networks:
+            - leetnews
         restart: always
         volumes:
             - ./mongo-data/:/data/db/:rw
@@ -10,11 +12,25 @@ services:
             - MONGO_INITDB_ROOT_USERNAME=root
             - MONGO_INITDB_ROOT_PASSWORD=nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2
         command: --quiet
+    util:
+        image: docker.marsgpl.com/leetnews/util:latest
+        networks:
+            - leetnews
+        restart: "no"
     crawler:
         image: docker.marsgpl.com/leetnews/crawler:latest
+        networks:
+            - leetnews
         restart: always
     api:
         image: docker.marsgpl.com/leetnews/api:latest
+        networks:
+            - leetnews
         restart: always
         ports:
             - 127.0.0.1:41080:80
+
+networks:
+    leetnews:
+        external:
+            name: leetnews

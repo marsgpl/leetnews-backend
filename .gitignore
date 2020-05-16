@@ -1,4 +1,5 @@
 .DS_Store
-deploy/api/image
+deploy/util/image
 deploy/crawler/image
+deploy/api/image
 mongo-data
