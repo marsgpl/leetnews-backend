@@ -218,6 +218,11 @@ Future<void> mergePost(
                     postChanged = true;
                 }
 
+                if ((postRow['author'] ?? '').length < (row['author'] ?? '').length) {
+                    postRow['author'] = row['author'];
+                    postChanged = true;
+                }
+
                 if ((!hasText && postRowHasText(row)) || (postRow['text'] ?? '').length < (row['text'] ?? '').length) {
                     postRow['text'] = row['text'];
                     hasText = true;
