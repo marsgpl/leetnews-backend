@@ -126,9 +126,10 @@ Future<void> mergePosts(DbCollection posts) async {
     print('Posts before: ${postsCountBefore}');
 
     int processed = 0;
+    final int processingLimit = 1000;
 
     SelectorBuilder selector = where
-        .sortBy('pubDate', descending: false)
+        .sortBy('pubDate', descending: true)
         .limit(1);
 
     while (true) {
@@ -138,9 +139,11 @@ Future<void> mergePosts(DbCollection posts) async {
         await mergePost(posts, row);
         processed++;
 
+        if (processed >= processingLimit) break;
+
         selector = where
-            .gt('pubDate', row['pubDate'])
-            .sortBy('pubDate', descending: false)
+            .lt('pubDate', row['pubDate'])
+            .sortBy('pubDate', descending: true)
             .limit(1);
     }
 
