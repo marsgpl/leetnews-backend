@@ -12,7 +12,7 @@ class RussianRtComRssCrawler extends RssCrawler {
 
         feed.findElements('rss').forEach((rss) {
             rss.findElements('channel').forEach((channel) {
-                final lang = channel.findElements('language').single.text.trim().toLowerCase();
+                final lang = parseLang(channel.findElements('language').single.text);
 
                 channel.findElements('item').forEach((item) {
                     final description = item.findElements('description');

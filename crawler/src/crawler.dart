@@ -5,6 +5,7 @@ import './Context.dart';
 import './entities/Post.dart';
 
 import './crawlers/RbcRuRssCrawler.dart';
+import './crawlers/LifeRuRssCrawler.dart';
 import './crawlers/LentaRuRssCrawler.dart';
 import './crawlers/RussianRtComRssCrawler.dart';
 import './crawlers/NewsYandexRuRssCrawler.dart';
@@ -23,6 +24,7 @@ Future<void> main() async {
 
     final crawlers = [
         RbcRuRssCrawler(),
+        LifeRuRssCrawler(),
         LentaRuRssCrawler(),
         RussianRtComRssCrawler(),
         NewsYandexRuRssCrawler(),

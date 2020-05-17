@@ -67,9 +67,8 @@ abstract class RssCrawler {
     List<Post> convertRssFeedToPosts(xml.XmlDocument feed);
 
     Future<xml.XmlDocument> crawlRssFeed(String feed) async {
-        final date = DateTime.now().toIso8601String();
         final client = HttpClient();
-        final request = await client.getUrl(Uri.parse('$feed?date=${date}'));
+        final request = await client.getUrl(Uri.parse(feed));
         final response = await request.close();
         final List<String> responseChunks = await utf8.decoder.bind(response).toList();
         return xml.parse(responseChunks.join(''));
@@ -97,15 +96,21 @@ abstract class RssCrawler {
 
     // Sat, 09 May 2020 19:51:00 +0300 -> 2002-02-27T14:00:00-0500
     // 09 May 2020 04:39:00 +0000
+    // Fri, 15 May 2020 10:23:44 GMT
     DateTime parsePubDate(String rssDateFmt) {
         if (rssDateFmt.length == 0) return DateTime.now();
 
         final parts = rssDateFmt.trim().split(' ');
-        final tz = parts[parts.length - 1]; // +0300
-        final hms = parts[parts.length - 2]; // 04:39:00
-        final year = parts[parts.length - 3]; // 2020
-        final monthName = parts[parts.length - 4]; // May
-        final day = parts[parts.length - 5]; // 09
+
+        String tz = parts[parts.length - 1]; // +0300
+        String hms = parts[parts.length - 2]; // 04:39:00
+        String year = parts[parts.length - 3]; // 2020
+        String monthName = parts[parts.length - 4]; // May
+        String day = parts[parts.length - 5]; // 09
+
+        if (tz == 'GMT') {
+            tz = '+0000';
+        }
 
         return DateTime.parse('$year-${monthNameToNumber(monthName)}-${day}T$hms$tz');
     }
@@ -161,4 +166,7 @@ abstract class RssCrawler {
 
     String parseCategory(String text) =>
         removeCdata(text).trim();
+
+    String parseLang(String text) =>
+        removeCdata(text).trim().toLowerCase();
 }

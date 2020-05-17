@@ -3,9 +3,9 @@ import 'package:xml/xml.dart' as xml;
 import '../entities/Post.dart';
 import './RssCrawler.dart';
 
-class LentaRuRssCrawler extends RssCrawler {
-    String origName = 'lenta.ru';
-    String rssFeed = 'http://lenta.ru/rss/news';
+class LifeRuRssCrawler extends RssCrawler {
+    String origName = 'life.ru';
+    String rssFeed = 'http://api.prod2.corr.life/public/xml/feed.xml';
 
     List<Post> convertRssFeedToPosts(xml.XmlDocument feed) {
         final List<Post> candidates = [];
