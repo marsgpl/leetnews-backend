@@ -13,12 +13,12 @@ Future<void> main() async {
     final posts = mongo.collection('posts');
 
     // await showPostsIndexes(posts);
+    // await fixPostsOrigId(posts);
+    // await fixPostsCategory(posts);
+    // await dedupPostsPubDates(posts);
 
     while (true) {
         Perf.start();
-            await fixPostsOrigId(posts);
-            await fixPostsCategory(posts);
-            await dedupPostsPubDates(posts);
             await mergePosts(posts);
         Perf.end('Iteration time');
 
