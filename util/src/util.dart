@@ -133,7 +133,7 @@ Future<void> mergePosts(DbCollection posts) async {
     print('Posts before: ${postsCountBefore}');
 
     int processed = 0;
-    final DateTime pubDateBottomEdge = DateTime.now().subtract(const Duration(days: 2));
+    final DateTime pubDateBottomEdge = DateTime.now().subtract(const Duration(days: 1));
 
     SelectorBuilder selector = where
         .gt('pubDate', pubDateBottomEdge)
