@@ -264,7 +264,7 @@ Future<void> mergePost(
         await posts.save(postRow);
     }
 
-    print('${postRow['pubDate']}    ${removedPostsCount > 0 ? removedPostsCount : '.'}${postChanged ? ' yes' : ''}');
+    // print('${postRow['pubDate']}    ${removedPostsCount > 0 ? removedPostsCount : '.'}${postChanged ? ' yes' : ''}');
 }
 
 Future<void> dedupPostsPubDates(DbCollection posts) async {
