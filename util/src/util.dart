@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:mongo_dart/mongo_dart.dart';
+import './Perf.dart';
 
 const MONGO_PATH = 'mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/news?authSource=admin&appName=util';
+const DELAY_BETWEEN_ITERATIONS_SECONDS = 60 * 9;
 
 Future<void> main() async {
     Db mongo = Db(MONGO_PATH);
@@ -10,13 +12,18 @@ Future<void> main() async {
 
     final posts = mongo.collection('posts');
 
-    await showPostsIndexes(posts);
-    await fixPostsOrigId(posts);
-    await fixPostsCategory(posts);
-    await dedupPostsPubDates(posts);
-    await mergePosts(posts);
+    // await showPostsIndexes(posts);
 
-    exit(0);
+    while (true) {
+        Perf.start();
+            await fixPostsOrigId(posts);
+            await fixPostsCategory(posts);
+            await dedupPostsPubDates(posts);
+            await mergePosts(posts);
+        Perf.end('Iteration time');
+
+        await Future.delayed(const Duration(seconds: DELAY_BETWEEN_ITERATIONS_SECONDS));
+    }
 }
 
 Future<void> fixPostsCategory(DbCollection posts) async {
@@ -126,9 +133,10 @@ Future<void> mergePosts(DbCollection posts) async {
     print('Posts before: ${postsCountBefore}');
 
     int processed = 0;
-    final int processingLimit = 1000;
+    final DateTime pubDateBottomEdge = DateTime.now().subtract(const Duration(days: 2));
 
     SelectorBuilder selector = where
+        .gt('pubDate', pubDateBottomEdge)
         .sortBy('pubDate', descending: true)
         .limit(1);
 
@@ -139,9 +147,8 @@ Future<void> mergePosts(DbCollection posts) async {
         await mergePost(posts, row);
         processed++;
 
-        if (processed >= processingLimit) break;
-
         selector = where
+            .gt('pubDate', pubDateBottomEdge)
             .lt('pubDate', row['pubDate'])
             .sortBy('pubDate', descending: true)
             .limit(1);

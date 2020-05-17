@@ -16,7 +16,7 @@ services:
         image: docker.marsgpl.com/leetnews/util:latest
         networks:
             - leetnews
-        restart: "no"
+        restart: always
     crawler:
         image: docker.marsgpl.com/leetnews/crawler:latest
         networks:

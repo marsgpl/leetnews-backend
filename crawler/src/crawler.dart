@@ -12,7 +12,6 @@ import './crawlers/NewsYandexRuRssCrawler.dart';
 import './crawlers/NewsRamblerRuRssCrawler.dart';
 
 const MONGO_PATH = 'mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/news?authSource=admin&appName=crawler';
-
 const DELAY_BETWEEN_ITERATIONS_SECONDS = 60 * 5;
 
 Future<void> main() async {
@@ -33,10 +32,11 @@ Future<void> main() async {
 
     while (true) {
         Perf.start();
-        final context = Context();
-        final crawled = await Future.wait(crawlers.map((crawler) => crawler.crawl(context)));
-        await insertPosts(posts, crawled);
+            final context = Context();
+            final crawled = await Future.wait(crawlers.map((crawler) => crawler.crawl(context)));
+            await insertPosts(posts, crawled);
         Perf.end('Iteration time');
+
         await Future.delayed(const Duration(seconds: DELAY_BETWEEN_ITERATIONS_SECONDS));
     }
 }
