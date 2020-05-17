@@ -188,20 +188,21 @@ Future<void> mergePost(
         return;
     }
 
-    final selector = where.eq('\$text', {
+    final selector = where
+        .eq('\$text', {
             '\$search': title,
             '\$caseSensitive': false,
         })
-            .metaTextScore('score')
-            .sortByMetaTextScore('score')
-            .limit(5)
-            .fields([
-                'title',
-                'text',
-                'imgUrl',
-                'imgMime',
-                'category',
-            ]);
+        .metaTextScore('score')
+        .sortByMetaTextScore('score')
+        .limit(5)
+        .fields([
+            'title',
+            'text',
+            'imgUrl',
+            'imgMime',
+            'category',
+        ]);
 
     while (true) {
         final rows = posts.find(selector);
