@@ -10,3 +10,4 @@ dependencies:
     mongo_dart: ^0.4.0
     xml: ^4.1.0
     html: ^0.14.0+3
+    html_unescape: ^1.0.1+3

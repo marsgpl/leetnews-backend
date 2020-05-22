@@ -4,12 +4,27 @@ import './Perf.dart';
 import './Context.dart';
 import './entities/Post.dart';
 
-import './crawlers/RbcRuRssCrawler.dart';
-import './crawlers/LifeRuRssCrawler.dart';
+// ru
+import './crawlers/AifRuRssCrawler.dart';
+import './crawlers/InterfaxRuRssCrawler.dart';
+import './crawlers/IzRuRssCrawler.dart';
+import './crawlers/KommersantRuRssCrawler.dart';
 import './crawlers/LentaRuRssCrawler.dart';
-import './crawlers/RussianRtComRssCrawler.dart';
-import './crawlers/NewsYandexRuRssCrawler.dart';
+import './crawlers/LifeRuRssCrawler.dart';
+import './crawlers/MkRuRssCrawler.dart';
+import './crawlers/NewsMailRuRssCrawler.dart';
 import './crawlers/NewsRamblerRuRssCrawler.dart';
+import './crawlers/NewsYandexRuRssCrawler.dart';
+import './crawlers/NewsruComRssCrawler.dart';
+import './crawlers/RbcRuRssCrawler.dart';
+import './crawlers/RbcdailyRuRssCrawler.dart';
+import './crawlers/RegnumRuRssCrawler.dart';
+import './crawlers/RgRuRssCrawler.dart';
+import './crawlers/RiaRuRssCrawler.dart';
+import './crawlers/RussianRtComRssCrawler.dart';
+import './crawlers/TassRuRssCrawler.dart';
+import './crawlers/VcRuRssCrawler.dart';
+import './crawlers/VestiRuRssCrawler.dart';
 
 const MONGO_PATH = 'mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/news?authSource=admin&appName=crawler';
 const DELAY_BETWEEN_ITERATIONS_SECONDS = 60 * 5;
@@ -22,12 +37,26 @@ Future<void> main() async {
     final posts = mongo.collection('posts');
 
     final crawlers = [
-        RbcRuRssCrawler(),
-        LifeRuRssCrawler(),
+        AifRuRssCrawler(),
+        InterfaxRuRssCrawler(),
+        IzRuRssCrawler(),
+        KommersantRuRssCrawler(),
         LentaRuRssCrawler(),
-        RussianRtComRssCrawler(),
-        NewsYandexRuRssCrawler(),
+        LifeRuRssCrawler(),
+        MkRuRssCrawler(),
+        NewsMailRuRssCrawler(),
         NewsRamblerRuRssCrawler(),
+        NewsYandexRuRssCrawler(),
+        NewsruComRssCrawler(),
+        RbcRuRssCrawler(),
+        RbcdailyRuRssCrawler(),
+        RegnumRuRssCrawler(),
+        RgRuRssCrawler(),
+        RiaRuRssCrawler(),
+        RussianRtComRssCrawler(),
+        TassRuRssCrawler(),
+        VcRuRssCrawler(),
+        VestiRuRssCrawler(),
     ];
 
     while (true) {

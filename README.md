@@ -42,8 +42,8 @@
     db.disableFreeMonitoring();
     db.getProfilingLevel();
     show databases;
-    show collections;
     use news;
+    show collections;
     db.categories.count();
     db.posts.count();
     db.posts.find({}).sort({ pubDate: -1 }).limit(1).pretty();
@@ -88,3 +88,16 @@
     rm ./mongo-data/posts.json
 
     add indexes
+
+## TODO
+
+description: contains &# &gt
+if no guid: use link
+convert all categories to lower case & split
+remove queries from all guids except origName = 'vesti.ru'
+lang: '' or length > 2
+url imgUrl: starts with //
+"text": "Москва, \n    21 мая 2020, 20:16 — REGNUM Впервые"
+!text && !imgUrl
+
+review posts quality
