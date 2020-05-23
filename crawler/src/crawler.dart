@@ -17,7 +17,6 @@ import './crawlers/NewsRamblerRuRssCrawler.dart';
 import './crawlers/NewsYandexRuRssCrawler.dart';
 import './crawlers/NewsruComRssCrawler.dart';
 import './crawlers/RbcRuRssCrawler.dart';
-import './crawlers/RbcdailyRuRssCrawler.dart';
 import './crawlers/RegnumRuRssCrawler.dart';
 import './crawlers/RgRuRssCrawler.dart';
 import './crawlers/RiaRuRssCrawler.dart';
@@ -49,7 +48,6 @@ Future<void> main() async {
         NewsYandexRuRssCrawler(),
         NewsruComRssCrawler(),
         RbcRuRssCrawler(),
-        RbcdailyRuRssCrawler(),
         RegnumRuRssCrawler(),
         RgRuRssCrawler(),
         RiaRuRssCrawler(),
