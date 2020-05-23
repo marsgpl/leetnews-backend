@@ -77,7 +77,7 @@ class Post implements Comparable<Post> {
         // author
         'category': category,
         'imgUrl': imgUrl,
-        'imgMime': imgMime,
+        // imgMime
         'lang': lang,
         // origId
         'origLink': origLink,

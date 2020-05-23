@@ -56,7 +56,22 @@ Future<Map<String, dynamic>> getPosts(
 
     final List<Post> postsList = await posts
         .find(selector)
-        .map((row) => Post.fromMongo(row))
+        .map((row) {
+            final post = Post.fromMongo(row);
+            final mime = post.imgMime;
+
+            if (
+                mime != 'image/jpg' &&
+                mime != 'image/jpeg' &&
+                mime != 'image/pjpeg' &&
+                mime != 'image/png' &&
+                mime != 'image/webp'
+            ) {
+                post.imgUrl = '';
+            }
+
+            return post;
+        })
         .toList();
 
     String nextLastId = postsList.length == 0 ? '' :
