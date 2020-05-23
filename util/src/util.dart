@@ -293,6 +293,12 @@ Future<void> mergePost(
     }
 
     if (postChanged) {
+        bool isCovid = isAboutCovid(postRow['title']) ||
+            isAboutCovid(postRow['text']) ||
+            isAboutCovid(postRow['category']) ||
+            isAboutCovid(postRow['author']);
+
+        postRow['isCovid'] = isCovid;
         await posts.save(postRow);
     }
 
