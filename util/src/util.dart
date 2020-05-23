@@ -160,8 +160,6 @@ Future<void> mergePostWithRow(
 
 Future<void> mergePosts(DbCollection posts) async {
     print('Merging posts ...');
-    final postsCountBefore = await posts.count();
-    print('Posts before: ${postsCountBefore}');
 
     int processed = 0;
     final DateTime pubDateBottomEdge = DateTime.now().subtract(const Duration(days: 1));
@@ -170,6 +168,9 @@ Future<void> mergePosts(DbCollection posts) async {
         .gt('pubDate', pubDateBottomEdge)
         .sortBy('pubDate', descending: true)
         .limit(1);
+
+    final postsCountBefore = await posts.count(selector);
+    print('Posts before: ${postsCountBefore}');
 
     while (true) {
         final row = await posts.findOne(selector);
