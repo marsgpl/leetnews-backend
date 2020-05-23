@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:mongo_dart/mongo_dart.dart';
 
 import '../entities/Post.dart';
+import '../postprocess/post.dart';
 
 // categories=Спорт,Интернет+и+СМИ
 // limit=20
@@ -72,22 +73,7 @@ Future<Map<String, dynamic>> searchPosts(
 
     final List<Post> postsList = await posts
         .find(selector)
-        .map((row) {
-            final post = Post.fromMongo(row);
-            final mime = post.imgMime;
-
-            if (
-                mime != 'image/jpg' &&
-                mime != 'image/jpeg' &&
-                mime != 'image/pjpeg' &&
-                mime != 'image/png' &&
-                mime != 'image/webp'
-            ) {
-                post.imgUrl = '';
-            }
-
-            return post;
-        })
+        .map((row) => postprocessPost(Post.fromMongo(row)))
         .toList();
 
     String nextLastId = postsList.length == 0 ? '' :
