@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:mongo_dart/mongo_dart.dart';
 import './Perf.dart';
+import './isAboutCovid.dart';
 
 const MONGO_PATH = 'mongodb://root:nl7QkdoQiqIEnSse8IMgBUfEp7gOThr2@mongo:27017/news?authSource=admin&appName=util';
 const DELAY_BETWEEN_ITERATIONS_SECONDS = 60 * 9;
@@ -12,6 +13,7 @@ Future<void> main() async {
 
     final posts = mongo.collection('posts');
 
+    await tagCovid(posts);
     // await showPostsIndexes(posts);
     // await fixPostsOrigId(posts);
     // await fixPostsCategory(posts);
@@ -36,6 +38,35 @@ Future<void> fixPostsCategory(DbCollection posts) async {
     await posts.update(selector, modify.set('category', 'Россия'));
 
     print('Count after: ${await posts.count(selector)}');
+    print('OK');
+}
+
+Future<void> tagCovid(DbCollection posts) async {
+    print('Tagging covid ...');
+    print('Count: ${await posts.count()}');
+
+    final selector = where.sortBy('pubDate', descending: false);
+
+    int processed = 0;
+    int covid = 0;
+
+    final rows = posts.find(selector);
+
+    await for (final row in rows) {
+        bool isCovid = isAboutCovid(row['title']) ||
+            isAboutCovid(row['text']) ||
+            isAboutCovid(row['category']) ||
+            isAboutCovid(row['author']);
+
+        row['isCovid'] = isCovid;
+        await posts.save(row);
+
+        if (isCovid) covid++;
+        processed++;
+    }
+
+    print('Processed: $processed');
+    print('Covid: $covid');
     print('OK');
 }
 

@@ -7,6 +7,7 @@ import 'package:html_unescape/html_unescape.dart';
 import './Context.dart';
 import './entities/Post.dart';
 import './cp1251toUtf8.dart';
+import './isAboutCovid.dart';
 
 abstract class RssCrawler {
     final htmlAnchor = RegExp(r'<a .*?</a>',
@@ -47,8 +48,8 @@ abstract class RssCrawler {
                     return false;
                 }
 
-                if (post.lang.length == 0) {
-                    print('$origName: post.lang.length == 0');
+                if (post.lang.length != 2) {
+                    print('$origName: post.lang.length != 2');
                     return false;
                 }
 
@@ -198,8 +199,8 @@ abstract class RssCrawler {
                 final channelCategory = parseChannelCategory(channel);
 
                 channel.findElements('item').forEach((item) {
-                    final lang = parseLang(item);
-                    final category = parseItemCategory(item);
+                    String lang = parseLang(item);
+                    String category = parseItemCategory(item);
 
                     final enclosureEl = item.findElements('enclosure');
 
@@ -218,27 +219,38 @@ abstract class RssCrawler {
 
                     final title = parseItemTitle(item);
                     final text = parseItemDescription(item);
+                    final author = parseItemAuthor(item);
+
+                    lang = lang.length > 0 ?
+                        lang :
+                        channelLang.length > 0 ?
+                            channelLang :
+                            defaultLang ?? 'en';
+
+                    category = category.length > 0 ?
+                        category :
+                        channelCategory.length > 0 ?
+                            channelCategory :
+                            defaultCategory ?? 'Generic';
+
+                    final isCovid = isAboutCovid(title) ||
+                        isAboutCovid(text) ||
+                        isAboutCovid(category) ||
+                        isAboutCovid(author);
 
                     candidates.add(Post(
-                        lang: lang.length > 0 ?
-                            lang :
-                            channelLang.length > 0 ?
-                                channelLang :
-                                defaultLang ?? '',
-                        category: category.length > 0 ?
-                            category :
-                            channelCategory.length > 0 ?
-                                channelCategory :
-                                defaultCategory ?? '',
+                        lang: lang,
+                        category: category,
                         origName: origName,
                         origId: parseItemGuid(item),
                         origLink: parseItemLink(item),
                         pubDate: parseItemPubDate(item),
                         title: title,
                         text: title == text ? '' : text,
-                        author: parseItemAuthor(item),
+                        author: author,
                         imgUrl: imgUrl,
                         imgMime: imgMime,
+                        isCovid: isCovid,
                     ));
                 });
             });

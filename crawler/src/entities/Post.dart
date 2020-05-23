@@ -15,6 +15,7 @@ class Post implements Comparable<Post> {
         this.origId = '',
         this.origLink = '',
         this.origName = '',
+        this.isCovid = false,
     }) :
         id = id ?? Uuid().v4(),
         createdAt = createdAt ?? DateTime.now(),
@@ -33,6 +34,7 @@ class Post implements Comparable<Post> {
     String origId;
     String origLink;
     String origName;
+    bool isCovid;
 
     @override
     String toString() => '*Post(id: $id)';
@@ -63,9 +65,11 @@ class Post implements Comparable<Post> {
         lang = mongoData['lang'] ?? '',
         origId = mongoData['origId'] ?? '',
         origLink = mongoData['origLink'] ?? '',
-        origName = mongoData['origName'] ?? '';
+        origName = mongoData['origName'] ?? '',
+        isCovid = mongoData['isCovid'] ?? false;
 
     Map<String, dynamic> toMongo() => {
+        // id
         'createdAt': createdAt,
         'pubDate': pubDate,
         'title': title,
@@ -78,5 +82,6 @@ class Post implements Comparable<Post> {
         'origId': origId,
         'origLink': origLink,
         'origName': origName,
+        'isCovid': isCovid,
     };
 }

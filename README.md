@@ -73,6 +73,7 @@
     db.posts.ensureIndex({ "category": 1 });
     db.posts.ensureIndex({ "origId": 1 }, { "unique": true });
     db.posts.ensureIndex({ "title": "text" });
+    db.posts.ensureIndex({ "isCovid": 1 });
     db.posts.getIndexes();
 
 ## Move DB posts to local
@@ -88,16 +89,3 @@
     rm ./mongo-data/posts.json
 
     add indexes
-
-## TODO
-
-description: contains &# &gt
-if no guid: use link
-convert all categories to lower case & split
-remove queries from all guids except origName = 'vesti.ru'
-lang: '' or length > 2
-url imgUrl: starts with //
-"text": "Москва, \n    21 мая 2020, 20:16 — REGNUM Впервые"
-!text && !imgUrl
-
-review posts quality

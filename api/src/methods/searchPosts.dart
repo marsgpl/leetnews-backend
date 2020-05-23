@@ -9,17 +9,19 @@ import '../entities/Post.dart';
 // langs=ru,en
 // lastId=2020-05-07%2021:02:00.002Z
 // text=Коронавирус
+// banTags=covid,xxx
 Future<Map<String, dynamic>> searchPosts(
     HttpRequest request,
     Db mongo,
 ) async {
     final params = request.uri.queryParameters;
 
-    final categories = (params['categories'] ?? '');
-    final lastId = (params['lastId'] ?? '');
+    final categories = (params['categories'] ?? '').trim();
+    final lastId = (params['lastId'] ?? '').trim();
     final limit = max(1, min(40, int.parse(params['limit'] ?? '20')));
-    final langs = (params['langs'] ?? 'ru');
+    final langs = (params['langs'] ?? 'ru').trim();
     final text = (params['text'] ?? '').trim();
+    final banTags = (params['banTags'] ?? '').trim();
 
     if (text.length == 0) {
         return {
@@ -53,6 +55,14 @@ Future<Map<String, dynamic>> searchPosts(
         } else {
             selector.eq('category', categories);
         }
+    }
+
+    if (banTags.length > 0) {
+        banTags.split(',').forEach((tag) {
+            if (tag == 'covid') {
+                selector.ne('isCovid', true);
+            }
+        });
     }
 
     selector
