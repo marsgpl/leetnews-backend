@@ -13,6 +13,7 @@ const CHUNKS = [
     'маски',
     'масок',
     'масочн',
+    'грипп',
     'covid',
     'corona',
     'virus',
