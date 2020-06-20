@@ -1,12 +1,13 @@
 #!/bin/zsh
 
+SSH_USERNAME="leetnews"
 SERVICE="$1"
 
-cd deploy/$SERVICE || exit 1
+cd "deploy/${SERVICE}" || exit 1
 
 DAY_HASH="$(date +"%Y-%m-%d")"
-DART_HASH="$(sha256sum ../../$SERVICE/pubspec.lock | cut -d " " -f 1)"
-IMAGE_TAG="docker.marsgpl.com/leetnews/${SERVICE}:latest"
+DART_HASH="$(sha256sum ../../${SERVICE}/pubspec.lock | cut -d " " -f 1)"
+IMAGE_TAG="docker.marsgpl.com/${SSH_USERNAME}/${SERVICE}:latest"
 
 echo "clean previous build ..."
     rm -rf image || exit 1
@@ -35,5 +36,5 @@ echo "cleanup ..."
 echo "OK"
 
 echo "docker pull ..."
-    ssh leetnews@marsgpl "docker pull $IMAGE_TAG" || exit 1
+    ssh "${SSH_USERNAME}@marsgpl" "docker pull ${IMAGE_TAG}" || exit 1
 echo "OK"

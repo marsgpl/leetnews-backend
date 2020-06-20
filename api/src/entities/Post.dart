@@ -54,8 +54,8 @@ class Post implements Comparable<Post> {
 
     Post.fromMongo(Map<String, dynamic> mongoData) :
         id = mongoData['_id'].toHexString() ?? Uuid().v4(),
-        createdAt = mongoData['createdAt'] ?? DateTime.now().toString(),
-        pubDate = mongoData['pubDate'] ?? DateTime.now().toString(),
+        createdAt = mongoData['createdAt'] ?? DateTime.now(),
+        pubDate = mongoData['pubDate'] ?? DateTime.now(),
         title = mongoData['title'] ?? '',
         text = mongoData['text'] ?? '',
         author = mongoData['author'] ?? '',

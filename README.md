@@ -1,10 +1,13 @@
 # Leetnews
 
+Leetnews app backend
+
 [API docs](https://github.com/marsgpl/leetnews-backend/wiki/API-docs)
 
 ## Prepare for deploy
 
     ./upload.sh
+    ssh leetnews@marsgpl 'docker network create leetnews'
 
 ## Deploy
 
@@ -13,27 +16,19 @@
     ./deploy.sh api
     ./deploy.sh util
 
-## Links
-
-    <https://dart.dev/tutorials/server/httpserver>
-    <https://pub.dev/packages/http_server>
-    <https://pub.dev/packages/mongo_dart>
-
 ## Local
 
     docker network create leetnews
-
     docker-compose up -d mongo
     docker-compose up util
     docker-compose up crawler
     docker-compose up api
 
-    docker-compose up -d --build --force-recreate mongo
-    docker-compose up --build --force-recreate util
-    docker-compose up --build --force-recreate crawler
-    docker-compose up --build --force-recreate api
+## Links
 
-    docker-compose logs -f mongo
+    <https://dart.dev/tutorials/server/httpserver>
+    <https://pub.dev/packages/http_server>
+    <https://pub.dev/packages/mongo_dart>
 
 ## DB
 

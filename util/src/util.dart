@@ -19,13 +19,13 @@ Future<void> main() async {
     // await fixPostsCategory(posts);
     // await dedupPostsPubDates(posts);
 
-    while (true) {
-        Perf.start();
-            await mergePosts(posts);
-        Perf.end('Iteration time');
+    // while (true) {
+    //     Perf.start();
+    //         await mergePosts(posts);
+    //     Perf.end('Iteration time');
 
-        await Future.delayed(const Duration(seconds: DELAY_BETWEEN_ITERATIONS_SECONDS));
-    }
+    //     await Future.delayed(const Duration(seconds: DELAY_BETWEEN_ITERATIONS_SECONDS));
+    // }
 }
 
 Future<void> fixPostsCategory(DbCollection posts) async {

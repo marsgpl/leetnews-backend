@@ -1,5 +1,7 @@
 #!/bin/zsh
 
-echo "upload files to prod vds ..."
-    rsync -rv upload/home leetnews@marsgpl:/ || exit 1
+SSH_USERNAME="leetnews"
+
+echo "Uploading files to prod ..."
+    rsync -rv upload/home "${SSH_USERNAME}@marsgpl":/ || exit 1
 echo "OK"
